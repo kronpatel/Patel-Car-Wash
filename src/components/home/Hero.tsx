@@ -1,166 +1,152 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
-import {
-  Sparkles,
-  Calendar,
-  ShieldCheck,
-  Star,
-  Clock,
-  ArrowRight,
-  Droplets,
-  CheckCircle2,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function Hero() {
+  const [videoError, setVideoError] = useState(false);
+
   return (
-    <section className="w-full relative min-h-[90vh] flex items-center justify-center overflow-hidden py-16 sm:py-24">
-      {/* Ambient Luxury Background Lights stretching full viewport */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[700px] bg-neon-blue/15 rounded-full blur-[160px] pointer-events-none" />
-      <div className="absolute top-1/4 -left-40 w-[600px] h-[600px] bg-gold/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 -right-40 w-[700px] h-[700px] bg-neon-blue/15 rounded-full blur-[150px] pointer-events-none" />
+    <section className="w-full border-b border-white/[0.08] bg-noir-900 py-12 sm:py-20 lg:py-24">
+      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          {/* Left Column: Eyebrow + Strong Headline + CTAs */}
+          <div className="lg:col-span-5 flex flex-col items-start text-left">
+            {/* Monospace Eyebrow Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+              className="flex items-center gap-2 mb-4 text-xs font-mono uppercase tracking-[0.2em] text-noir-400"
+            >
+              <span className="accent-dot accent-dot-cyan" />
+              <span>Patel car&apos;spa · Rankuva, Gujarat</span>
+            </motion.div>
 
-      {/* Subtle Background Grid Pattern spanning full bleed */}
-      <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none w-full"
-        style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, #ffffff 1px, transparent 0)`,
-          backgroundSize: "32px 32px",
-        }}
-      />
+            {/* Short, Confident Headline — One Strong Line */}
+            <motion.h1
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.05 }}
+              className="text-3xl sm:text-5xl lg:text-5.5xl font-heading font-semibold text-white tracking-tight leading-[1.08] mb-4"
+            >
+              Showroom finish.
+              <br />
+              <span className="text-white">Zero swirls.</span>
+            </motion.h1>
 
-      <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 relative z-10">
-        <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
-          {/* Eyebrow Badge */}
+            {/* Single Line of Subcopy */}
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              className="text-xs sm:text-sm text-noir-300 max-w-md font-sans leading-relaxed mb-7"
+            >
+              German snow foam wash, interior steam extraction, and 9H nano-ceramic protection.
+              Flat ₹399 express wash for every vehicle class with 100% pay-at-shop policy.
+            </motion.p>
+
+            {/* Two Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.15 }}
+              className="flex flex-wrap items-center gap-3 mb-8"
+            >
+              <Link href="/book" className="btn-primary">
+                <span>Book Bay Reservation</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+
+              <Link href="/pricing" className="btn-outline">
+                <span>View Pricing Matrix</span>
+              </Link>
+            </motion.div>
+
+            {/* Monospace Metric Footnotes */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+              className="pt-5 border-t border-white/[0.08] w-full flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-mono text-noir-400"
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="accent-dot accent-dot-cyan !w-1.5 !h-1.5" />
+                <span className="text-white">₹399.00</span>
+                <span className="text-[11px] text-noir-500">FLAT_BASIC</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="accent-dot accent-dot-emerald !w-1.5 !h-1.5" />
+                <span className="text-white">0 UPFRONT</span>
+                <span className="text-[11px] text-noir-500">PAY_AT_SHOP</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-noir-500">TURNAROUND:</span>
+                <span className="text-white">25-30M</span>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Right Column: Cinematic Hero Product Shot */}
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-panel border border-neon-blue/30 text-xs sm:text-sm text-neon-blue mb-6 shadow-neon-sm"
-          >
-            <Sparkles className="w-4 h-4 text-gold animate-pulse" />
-            <span className="font-medium tracking-wide">
-              Patel car&apos;spa &amp; Detailing — Gujarat&apos;s #1 Luxury Auto Spa &amp; Ceramic Studio
-            </span>
-          </motion.div>
-
-          {/* Main Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl sm:text-6xl lg:text-7xl font-heading font-extrabold text-white tracking-tight leading-[1.1] mb-6"
-          >
-            Showroom-Grade Shine.{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-blue via-cyan-300 to-neon-blue glow-text-neon">
-              Zero Swirls.
-            </span>{" "}
-            Pure Luxury.
-          </motion.h1>
-
-          {/* Subtitle with Key Value Props */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-base sm:text-xl text-gray-300 max-w-2xl leading-relaxed mb-8"
-          >
-            Experience German-standard snow foam baths, interior steam
-            sanitization, and 9H nano-ceramic protection. Flat ₹399 basic wash
-            for all vehicles. Pay at the shop after 100% satisfaction.
-          </motion.p>
-
-          {/* Trust Value Pillars */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.25 }}
-            className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm text-gray-300 mb-9"
-          >
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>₹399 Same Price Any Car</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-neon-blue" />
-              <span>100% Scratch-Safe Microfiber</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-gold" />
-              <span>Pay After Wash</span>
-            </span>
-          </motion.div>
-
-          {/* Call to Action Buttons */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
+            transition={{ duration: 0.35, delay: 0.1 }}
+            className="lg:col-span-7 w-full"
           >
-            <Link
-              href="/book"
-              className="w-full sm:w-auto neon-glow-btn px-8 py-4 rounded-2xl text-base font-bold flex items-center justify-center gap-2.5 shadow-neon-md"
-            >
-              <Calendar className="w-5 h-5" />
-              <span>Book Appointment Now</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            <div className="surface rounded border border-white/[0.1] bg-[#060608] overflow-hidden relative group">
+              {/* Monospace Product Telemetry Top Bar */}
+              <div className="flex items-center justify-between px-3.5 py-2 bg-noir-950/90 border-b border-white/[0.08] text-[11px] font-mono text-noir-400">
+                <div className="flex items-center gap-2">
+                  <span className="accent-dot accent-dot-cyan !w-1.5 !h-1.5" />
+                  <span className="text-white font-medium">HERO_OBJECT: 992_GT3_TOURING</span>
+                </div>
+                <div className="flex items-center gap-3 text-noir-500">
+                  <span>BAY: 01_HYDRO</span>
+                  <span className="text-noir-700">|</span>
+                  <span className="text-emerald-400">● 140_BAR_ACTIVE</span>
+                </div>
+              </div>
 
-            <Link
-              href="/pricing"
-              className="w-full sm:w-auto glass-panel px-7 py-4 rounded-2xl text-base font-semibold text-gray-200 hover:text-white border border-white/10 hover:border-neon-blue/40 flex items-center justify-center gap-2 transition-all hover:bg-white/5"
-            >
-              <Droplets className="w-5 h-5 text-neon-blue" />
-              <span>View Transparent Pricing</span>
-            </Link>
-          </motion.div>
+              {/* Cinematic Product Container — Brightest Object on Screen */}
+              <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden bg-noir-950">
+                {!videoError ? (
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    onError={() => setVideoError(true)}
+                    poster="https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&w=1600&q=85"
+                    className="w-full h-full object-cover contrast-110 saturate-[0.95]"
+                  >
+                    <source
+                      src="https://assets.mixkit.co/videos/preview/mixkit-car-getting-washed-with-soap-in-a-car-wash-41712-large.mp4"
+                      type="video/mp4"
+                    />
+                  </video>
+                ) : (
+                  <Image
+                    src="https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&w=1600&q=85"
+                    alt="Vehicle undergoing precision snow foam wash"
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 55vw"
+                    className="object-cover contrast-110 saturate-[0.95]"
+                  />
+                )}
 
-          {/* Social Proof Stats Floating Strip */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.45 }}
-            className="mt-14 sm:mt-16 grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 w-full max-w-4xl lg:max-w-5xl"
-          >
-            {/* Stat 1 */}
-            <div className="glass-panel p-4 rounded-2xl border border-white/5 flex items-center gap-3.5 text-left">
-              <div className="w-10 h-10 rounded-xl bg-gold/15 text-gold flex items-center justify-center shrink-0">
-                <Star className="w-5 h-5 fill-gold text-gold" />
-              </div>
-              <div>
-                <p className="text-xl font-heading font-extrabold text-white">
-                  4.9 / 5.0
-                </p>
-                <p className="text-xs text-gray-400">1,200+ Google Reviews</p>
-              </div>
-            </div>
+                {/* Subtle Technical Frame Overlay */}
+                <div className="absolute inset-0 border border-white/[0.06] pointer-events-none" />
 
-            {/* Stat 2 */}
-            <div className="glass-panel p-4 rounded-2xl border border-white/5 flex items-center gap-3.5 text-left">
-              <div className="w-10 h-10 rounded-xl bg-neon-blue/15 text-neon-blue flex items-center justify-center shrink-0">
-                <Clock className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xl font-heading font-extrabold text-white">
-                  25 Mins
-                </p>
-                <p className="text-xs text-gray-400">Express Foam Turnaround</p>
-              </div>
-            </div>
-
-            {/* Stat 3 */}
-            <div className="col-span-2 sm:col-span-1 glass-panel p-4 rounded-2xl border border-white/5 flex items-center gap-3.5 text-left justify-center sm:justify-start">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xl font-heading font-extrabold text-white">
-                  100% Guaranteed
-                </p>
-                <p className="text-xs text-gray-400">Scratch-Safe Hand Wash</p>
+                {/* Monospace Live Telemetry Lower Badge */}
+                <div className="absolute bottom-3 left-3 z-10 flex items-center gap-2 px-2.5 py-1 rounded bg-noir-950/90 border border-white/[0.1] text-[10px] font-mono text-noir-300">
+                  <span className="text-accent-cyan">[SURFACE_SCAN]</span>
+                  <span>HYDROPHOBIC_BEADING: 108° CONTACT_ANGLE</span>
+                </div>
               </div>
             </div>
           </motion.div>
