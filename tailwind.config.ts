@@ -15,8 +15,14 @@ const config: Config = {
       lg: "1024px",
       xl: "1280px",
       "2xl": "1440px",
+      "3xl": "1920px",
     },
     extend: {
+      maxWidth: {
+        "8xl": "90rem",
+        "9xl": "100rem",
+        "10xl": "112.5rem",
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
