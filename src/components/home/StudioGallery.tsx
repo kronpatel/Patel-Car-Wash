@@ -71,7 +71,7 @@ export default function StudioGallery() {
         <div className="text-center max-w-2xl mx-auto mb-14">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-neon-blue/10 border border-neon-blue/20 text-xs font-semibold text-neon-blue uppercase tracking-wider mb-3">
             <Users className="w-3.5 h-3.5 text-neon-blue" />
-            <span>Inside CleanPro Studio</span>
+            <span>Inside Patel car&apos;spa &amp; Detailing</span>
           </div>
 
           <h2 className="text-3xl sm:text-4xl font-heading font-extrabold text-white tracking-tight">

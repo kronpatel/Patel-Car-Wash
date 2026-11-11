@@ -21,7 +21,7 @@ export default function Testimonials() {
             Loved by Owners of <span className="text-neon-blue">Luxury Vehicles</span>
           </h2>
           <p className="mt-3 text-sm sm:text-base text-gray-400">
-            Read authentic feedback from drivers who trust CleanPro with their
+            Read authentic feedback from drivers who trust Patel car&apos;spa &amp; Detailing with their
             daily rides, supercars, and superbikes.
           </p>
         </div>

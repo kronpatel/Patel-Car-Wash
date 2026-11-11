@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -79,19 +80,15 @@ export default function Header() {
       <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
         <div className="flex items-center justify-between">
           {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-charcoal-850 border border-neon-blue/40 flex items-center justify-center shadow-neon-sm group-hover:border-neon-blue transition-colors">
-              <Car className="w-5 h-5 text-neon-blue group-hover:scale-110 transition-transform" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-heading font-extrabold text-xl tracking-tight text-white flex items-center gap-1">
-                Clean<span className="text-neon-blue">Pro</span>
-                <Sparkles className="w-3.5 h-3.5 text-gold" />
-              </span>
-              <span className="text-[10px] uppercase tracking-widest text-gray-400 font-medium">
-                Auto Detailing Studio
-              </span>
-            </div>
+          <Link href="/" className="flex items-center group bg-transparent">
+            <Image
+              src="/logo/logo.png"
+              alt="Patel car'spa & Detailing"
+              width={220}
+              height={80}
+              priority
+              className="object-contain h-10 sm:h-12 md:h-14 w-auto max-w-[180px] sm:max-w-[220px] drop-shadow-[0_0_1px_rgba(255,255,255,0.7)] transition-transform group-hover:scale-105"
+            />
           </Link>
 
           {/* Desktop Navigation Links */}

@@ -134,7 +134,7 @@ export default function MapSection() {
               allowFullScreen={true}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="CleanPro Car Wash & Detailing Location Map"
+              title="Patel car'spa & Detailing Location Map"
               className="w-full h-full grayscale-[0.3] contrast-125"
             />
 

@@ -148,7 +148,7 @@ export default function CustomerDashboardView({
                 Your Referral Code
               </p>
               <p className="text-lg font-mono font-bold text-white tracking-widest">
-                {user.referralCode || "CLEANPRO"}
+                {user.referralCode || "PATELSPA"}
               </p>
             </div>
 

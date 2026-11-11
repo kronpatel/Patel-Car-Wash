@@ -2,6 +2,7 @@
 
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import {
@@ -77,14 +78,15 @@ function LoginForm() {
     <div className="w-full max-w-md mx-auto">
       {/* Brand Icon & Heading */}
       <div className="text-center mb-8">
-        <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group">
-          <div className="w-12 h-12 rounded-2xl bg-charcoal-850 border border-neon-blue/40 flex items-center justify-center shadow-neon-sm group-hover:border-neon-blue transition-colors">
-            <Car className="w-6 h-6 text-neon-blue group-hover:scale-110 transition-transform" />
-          </div>
-          <span className="font-heading font-extrabold text-2xl tracking-tight text-white flex items-center gap-1">
-            Clean<span className="text-neon-blue">Pro</span>
-            <Sparkles className="w-4 h-4 text-gold" />
-          </span>
+        <Link href="/" className="inline-block group mb-4 bg-transparent">
+          <Image
+            src="/logo/logo.png"
+            alt="Patel car'spa & Detailing"
+            width={200}
+            height={70}
+            priority
+            className="object-contain h-10 sm:h-12 w-auto max-w-[180px] sm:max-w-[200px] drop-shadow-[0_0_1px_rgba(255,255,255,0.7)] transition-transform group-hover:scale-105"
+          />
         </Link>
         <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-white tracking-tight">
           Welcome Back
@@ -182,7 +184,7 @@ function LoginForm() {
               </>
             ) : (
               <>
-                <span>Sign In to CleanPro</span>
+                <span>Sign In to Patel car&apos;spa &amp; Detailing</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -192,7 +194,7 @@ function LoginForm() {
         {/* Demo Fast Login Trigger */}
         <div className="mt-6 pt-5 border-t border-white/5 text-center">
           <p className="text-xs text-gray-400 mb-2">
-            Testing CleanPro Admin Workstation?
+            Testing Patel car&apos;spa &amp; Detailing Admin Workstation?
           </p>
           <button
             type="button"

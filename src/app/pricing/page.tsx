@@ -33,7 +33,7 @@ const FAQS = [
   {
     question: "Do I need to pay online when booking an appointment?",
     answer:
-      "No! CleanPro operates on a 100% 'Pay After Wash' policy. You reserve your bay and time slot online for free, inspect your vehicle after service, and pay via Cash, UPI, or Card at the shop counter.",
+      "No! Patel car'spa & Detailing operates on a 100% 'Pay After Wash' policy. You reserve your bay and time slot online for free, inspect your vehicle after service, and pay via Cash, UPI, or Card at the shop counter.",
   },
   {
     question: "How do Clean Coins loyalty points work?",

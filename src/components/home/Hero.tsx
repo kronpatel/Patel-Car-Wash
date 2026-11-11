@@ -42,7 +42,7 @@ export default function Hero() {
           >
             <Sparkles className="w-4 h-4 text-gold animate-pulse" />
             <span className="font-medium tracking-wide">
-              Gurugram&apos;s #1 Luxury Auto Spa & Ceramic Studio
+              Patel car&apos;spa &amp; Detailing — Gurugram&apos;s #1 Luxury Auto Spa &amp; Ceramic Studio
             </span>
           </motion.div>
 

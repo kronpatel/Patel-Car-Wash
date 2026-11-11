@@ -31,12 +31,13 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"),
   title: {
-    default: "CleanPro | Luxury Car Wash & Detailing Studio",
-    template: "%s | CleanPro Auto Detailing",
+    default: "Patel car'spa & Detailing | Luxury Auto Spa in Gurugram",
+    template: "%s | Patel car'spa & Detailing",
   },
   description:
-    "Gurugram's premier luxury auto spa & detailing studio. High-pressure snow foam baths, interior steam sanitization, 9H nano-ceramic coating, and paint correction with guaranteed customer satisfaction.",
+    "Patel car'spa & Detailing — Gurugram's premier luxury auto spa & detailing studio. High-pressure snow foam baths, interior steam sanitization, 9H nano-ceramic coating, and paint correction with guaranteed customer satisfaction.",
   keywords: [
+    "Patel car'spa & Detailing",
     "car wash gurugram",
     "luxury car detailing",
     "ceramic coating",
@@ -44,12 +45,11 @@ export const metadata: Metadata = {
     "foam wash",
     "interior steam clean",
     "bike wash",
-    "CleanPro car wash",
     "auto spa gurugram",
   ],
-  authors: [{ name: "CleanPro Detailing Studio" }],
-  creator: "CleanPro",
-  publisher: "CleanPro Auto Spa",
+  authors: [{ name: "Patel car'spa & Detailing" }],
+  creator: "Patel car'spa & Detailing",
+  publisher: "Patel car'spa & Detailing",
   robots: {
     index: true,
     follow: true,
@@ -58,25 +58,25 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: "/",
-    siteName: "CleanPro Luxury Detailing Studio",
-    title: "CleanPro | Luxury Car Wash & Detailing Studio",
+    siteName: "Patel car'spa & Detailing",
+    title: "Patel car'spa & Detailing | Luxury Auto Spa in Gurugram",
     description:
-      "Experience showroom-grade paint correction, hydrophobic snow foam baths, and ceramic protection in Gurugram.",
+      "Experience showroom-grade paint correction, hydrophobic snow foam baths, and ceramic protection at Patel car'spa & Detailing in Gurugram.",
     images: [
       {
-        url: "/icons/icon-512x512.png",
+        url: "/logo/logo.png",
         width: 512,
         height: 512,
-        alt: "CleanPro Luxury Car Wash & Detailing",
+        alt: "Patel car'spa & Detailing",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "CleanPro | Luxury Car Wash & Detailing Studio",
+    title: "Patel car'spa & Detailing | Luxury Auto Spa in Gurugram",
     description:
-      "Gurugram's premier luxury auto spa & detailing studio. Snow foam wash, steam cleaning & ceramic coating.",
-    images: ["/icons/icon-512x512.png"],
+      "Patel car'spa & Detailing — Gurugram's premier luxury auto spa & detailing studio. Snow foam wash, steam cleaning & ceramic coating.",
+    images: ["/logo/logo.png"],
   },
   manifest: "/manifest.json",
   icons: {

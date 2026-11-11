@@ -19,7 +19,7 @@ export default function TrustBadges() {
         <div className="text-center max-w-2xl mx-auto mb-12">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neon-blue/10 border border-neon-blue/20 text-xs font-semibold text-neon-blue uppercase tracking-wider mb-3">
             <Sparkles className="w-3.5 h-3.5 text-gold" />
-            <span>The CleanPro Quality Standard</span>
+            <span>The Patel car&apos;spa &amp; Detailing Quality Standard</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-heading font-extrabold text-white">
             Why Discerning Automobile Owners Choose Us
