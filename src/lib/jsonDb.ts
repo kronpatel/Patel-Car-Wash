@@ -26,7 +26,7 @@ function getDefaultData(): JsonDatabase {
         name: "Admin",
         email: "admin@cleanpro.com",
         password: adminPasswordHash,
-        phone: "+919876543210",
+        phone: "+919624348480",
         role: "admin",
         cleanCoins: 0,
         referralCode: "ADMIN001",

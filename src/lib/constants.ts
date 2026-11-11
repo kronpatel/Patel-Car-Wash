@@ -19,8 +19,8 @@ export const MAPS_PLACE_LINK = "https://maps.app.goo.gl/GY3vYw9UrNuz2Wng7";
 
 export const SHOP_CONFIG = {
   name: process.env.NEXT_PUBLIC_SHOP_NAME || "Patel car'spa & Detailing",
-  phone: process.env.NEXT_PUBLIC_SHOP_PHONE || "+91 98765 43210",
-  whatsappNumber: process.env.NEXT_PUBLIC_SHOP_WHATSAPP || "+919876543210",
+  phone: process.env.NEXT_PUBLIC_SHOP_PHONE || "+91 96243 48480",
+  whatsappNumber: process.env.NEXT_PUBLIC_SHOP_WHATSAPP || "+919624348480",
   email: process.env.NEXT_PUBLIC_SHOP_EMAIL || "contact@patelcarspa.com",
   address:
     process.env.NEXT_PUBLIC_SHOP_ADDRESS ||
