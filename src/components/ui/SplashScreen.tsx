@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Car, Sparkles, Droplets } from "lucide-react";
+import { Sparkles, ArrowRight } from "lucide-react";
 
 export default function SplashScreen() {
   const [isVisible, setIsVisible] = useState(false);
@@ -10,22 +11,22 @@ export default function SplashScreen() {
 
   useEffect(() => {
     setHasMounted(true);
-    // Check if splash screen was already displayed during this browser session
+
     try {
-      const splashShown = sessionStorage.getItem("cleanpro_splash_shown");
+      const splashShown = sessionStorage.getItem("patel_splash_shown");
 
       if (!splashShown) {
         setIsVisible(true);
-        // Auto fade-out after 2 seconds
+
+        // Fast & snappy: auto dismiss after 1.1 seconds so Hero is never blocked
         const timer = setTimeout(() => {
           setIsVisible(false);
-          sessionStorage.setItem("cleanpro_splash_shown", "true");
-        }, 2000);
+          sessionStorage.setItem("patel_splash_shown", "true");
+        }, 1100);
 
         return () => clearTimeout(timer);
       }
     } catch {
-      // Handle private browsing or restricted storage modes gracefully
       setIsVisible(false);
     }
   }, []);
@@ -33,120 +34,96 @@ export default function SplashScreen() {
   const handleDismiss = () => {
     setIsVisible(false);
     try {
-      sessionStorage.setItem("cleanpro_splash_shown", "true");
+      sessionStorage.setItem("patel_splash_shown", "true");
     } catch {
-      // Ignore storage errors
+      // Ignore storage errors in private/incognito modes
     }
   };
 
-  if (!hasMounted || !isVisible) {
+  if (!hasMounted) {
     return null;
   }
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isVisible && (
         <motion.div
-          key="splash"
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 1.05 }}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-charcoal-950 overflow-hidden"
+          key="patel-splash"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0, transition: { duration: 0.45, ease: "easeInOut" } }}
+          transition={{ duration: 0.25 }}
+          onClick={handleDismiss}
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-charcoal-950/98 backdrop-blur-xl select-none cursor-pointer overflow-hidden"
+          title="Click anywhere to skip"
         >
-          {/* Dismiss / Skip button */}
+          {/* Subtle Ambient Background Glows (GPU Accelerated, No lag) */}
+          <div className="absolute w-[500px] h-[500px] rounded-full bg-neon-blue/15 blur-[120px] -top-24 -left-24 pointer-events-none" />
+          <div className="absolute w-[450px] h-[450px] rounded-full bg-gold/10 blur-[120px] -bottom-24 -right-24 pointer-events-none" />
+
+          {/* Quick Skip Pill */}
           <button
-            onClick={handleDismiss}
-            className="absolute top-6 right-6 text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-full border border-white/10 hover:border-neon-blue/40 transition-colors z-20"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDismiss();
+            }}
+            className="absolute top-6 right-6 text-xs text-gray-400 hover:text-white px-3.5 py-1.5 rounded-full border border-white/10 hover:border-neon-blue/40 bg-white/5 transition-all z-20 flex items-center gap-1.5"
           >
-            Skip
+            <span>Skip</span>
+            <ArrowRight className="w-3 h-3 text-neon-blue" />
           </button>
 
-          {/* Ambient Background Glows */}
-          <div className="absolute w-96 h-96 rounded-full bg-neon-blue/15 blur-3xl -top-20 -left-20 pointer-events-none" />
-          <div className="absolute w-96 h-96 rounded-full bg-gold/10 blur-3xl -bottom-20 -right-20 pointer-events-none" />
-
-          {/* Floating Foam & Bubbles */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {[...Array(14)].map((_, i) => (
+          {/* Brand Presentation Card */}
+          <motion.div
+            initial={{ scale: 0.92, opacity: 0, y: 10 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 1.04, opacity: 0 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+            className="relative z-10 flex flex-col items-center px-6 text-center max-w-md pointer-events-none"
+          >
+            {/* Official Studio Logo */}
+            <div className="relative mb-6 drop-shadow-[0_0_25px_rgba(0,210,255,0.25)]">
+              <Image
+                src="/logo/logo.png"
+                alt="Patel car'spa & Detailing"
+                width={260}
+                height={95}
+                priority
+                className="object-contain h-16 sm:h-20 w-auto"
+              />
               <motion.div
-                key={i}
-                initial={{
-                  y: 400 + Math.random() * 200,
-                  x: (i * 80) % 900,
-                  opacity: 0,
-                  scale: 0.5 + Math.random() * 0.7,
-                }}
-                animate={{
-                  y: -100,
-                  opacity: [0, 0.8, 0],
-                }}
-                transition={{
-                  duration: 2.2 + (i % 3) * 0.4,
-                  repeat: Infinity,
-                  ease: "easeOut",
-                  delay: (i * 0.12) % 1.5,
-                }}
-                className="absolute flex items-center justify-center rounded-full bg-neon-blue/20 backdrop-blur-xs border border-neon-blue/40 shadow-neon-sm"
-                style={{
-                  width: `${24 + (i % 5) * 8}px`,
-                  height: `${24 + (i % 5) * 8}px`,
-                }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                className="absolute -top-3 -right-3 w-7 h-7 rounded-full bg-gold/20 border border-gold/60 flex items-center justify-center shadow-gold-sm"
               >
-                <Droplets className="w-3 h-3 text-neon-blue opacity-75" />
+                <Sparkles className="w-3.5 h-3.5 text-gold" />
               </motion.div>
-            ))}
-          </div>
+            </div>
 
-          {/* Brand Icon & Logo Container */}
-          <div className="relative z-10 flex flex-col items-center">
-            {/* Animated Car Silhouette with Sparkle Badge */}
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: [0.8, 1.08, 1], opacity: 1 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="relative mb-6"
-            >
-              <div className="w-24 h-24 rounded-3xl bg-charcoal-850 border border-neon-blue/50 flex items-center justify-center shadow-neon-md relative">
-                <Car className="w-12 h-12 text-neon-blue" />
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-                  className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gold/20 border border-gold flex items-center justify-center shadow-gold-sm"
-                >
-                  <Sparkles className="w-4 h-4 text-gold" />
-                </motion.div>
-              </div>
-            </motion.div>
-
-            {/* Typography */}
-            <motion.h1
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              className="text-4xl font-heading font-extrabold tracking-tight text-white mb-2"
-            >
-              Clean<span className="text-neon-blue glow-text-neon">Pro</span>
-            </motion.h1>
-
+            {/* Sub-tagline */}
             <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="text-sm tracking-widest uppercase font-medium text-gray-400"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.35 }}
+              className="text-xs sm:text-sm tracking-widest uppercase font-semibold text-gray-300 mb-6"
             >
-              Luxury Detailing & Wash
+              Gujarat&apos;s Luxury Auto Spa &amp; Detailing
             </motion.p>
 
-            {/* Shimmer Progress Line */}
-            <div className="w-48 h-1 bg-charcoal-800 rounded-full mt-6 overflow-hidden relative">
+            {/* Snappy Progress Shimmer Line */}
+            <div className="w-48 sm:w-56 h-1 bg-charcoal-800 rounded-full overflow-hidden relative border border-white/5">
               <motion.div
-                initial={{ x: "-100%" }}
-                animate={{ x: "100%" }}
-                transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
-                className="w-1/2 h-full bg-gradient-to-r from-transparent via-neon-blue to-transparent shadow-neon-sm"
+                initial={{ width: "0%" }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 0.95, ease: "easeInOut" }}
+                className="h-full bg-gradient-to-r from-neon-blue via-cyan-300 to-gold shadow-neon-sm"
               />
             </div>
-          </div>
+
+            <p className="text-[11px] text-gray-500 mt-4">
+              Tap anywhere to enter
+            </p>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
