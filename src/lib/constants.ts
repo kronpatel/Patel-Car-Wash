@@ -4,6 +4,19 @@ import { VehicleType, PlanType, ServiceItem } from "@/types";
  * Patel car'spa & Detailing Master Constants & Configurations
  */
 
+export const STUDIO_COORDINATES = {
+  lat: 20.821819967242934,
+  lng: 73.15558922399794,
+};
+
+export const MAPS_EMBED_URL =
+  "https://maps.google.com/maps?q=20.821819967242934,73.15558922399794&hl=en&z=16&output=embed";
+
+export const MAPS_DIRECTIONS_URL =
+  "https://www.google.com/maps/dir/?api=1&destination=20.821819967242934,73.15558922399794";
+
+export const MAPS_PLACE_LINK = "https://maps.app.goo.gl/GY3vYw9UrNuz2Wng7";
+
 export const SHOP_CONFIG = {
   name: process.env.NEXT_PUBLIC_SHOP_NAME || "Patel car'spa & Detailing",
   phone: process.env.NEXT_PUBLIC_SHOP_PHONE || "+91 98765 43210",
@@ -11,14 +24,14 @@ export const SHOP_CONFIG = {
   email: process.env.NEXT_PUBLIC_SHOP_EMAIL || "contact@patelcarspa.com",
   address:
     process.env.NEXT_PUBLIC_SHOP_ADDRESS ||
-    "Plot 42, Sector 18, Commercial Auto Hub, Gurugram, Haryana 122015",
+    "Patel Car Wash And Spa, Rankuva, Gujarat 396560",
   hours: "Monday – Sunday: 8:00 AM – 8:00 PM",
   mapsEmbedUrl:
-    process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_URL ||
-    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3507.039290076219!2d77.0673!3d28.4795!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjjCsDI4JzQ2LjIiTiA3N8KwMDQnMDIuMyJF!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin",
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_URL || MAPS_EMBED_URL,
   directionsUrl:
-    process.env.NEXT_PUBLIC_GOOGLE_MAPS_DIRECTIONS_URL ||
-    "https://maps.google.com/?q=28.4795,77.0673",
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_DIRECTIONS_URL || MAPS_DIRECTIONS_URL,
+  placeLink: MAPS_PLACE_LINK,
+  coordinates: STUDIO_COORDINATES,
 };
 
 export const PAYMENT_CONFIG = {
@@ -60,7 +73,7 @@ export const PRICING_MATRIX: Record<
     name: "Basic Wash",
     tagline: "Essential high-pressure foam bath & streak-free exterior finish",
     isFixedPrice: true,
-    fixedPrice: 399, // Guaranteed identical price for all vehicle types!
+    fixedPrice: 399,
     features: [
       "High-pressure snow foam pre-wash & rinse",
       "Hand wash with 2-bucket scratch-safe method",
@@ -224,10 +237,8 @@ export const TIME_SLOTS: string[] = [
  * Clean Coins Loyalty Program Rules
  */
 export const LOYALTY_RULES = {
-  // ₹100 spent = 10 Clean Coins
   RUPEES_FOR_TEN_COINS: 100,
   COINS_EARNED_PER_RUPEE: 0.1,
-  // 100 coins = ₹50 discount
   COIN_REDEMPTION_VALUE: 0.5,
   MIN_COINS_TO_REDEEM: 50,
   REFERRAL_BONUS_COINS: 50,

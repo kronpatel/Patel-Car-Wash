@@ -7,7 +7,7 @@ import ServicesGrid from "@/components/services/ServicesGrid";
 export const metadata: Metadata = {
   title: "Car Wash & Detailing Services",
   description:
-    "Explore our complete range of premium automotive treatments: pH-neutral snow foam wash, interior steam extraction, paint correction & 9H ceramic coating in Gurugram.",
+    "Explore our complete range of premium automotive treatments: pH-neutral snow foam wash, interior steam extraction, paint correction & 9H ceramic coating in Gujarat.",
 };
 
 const PROCESS_STEPS = [

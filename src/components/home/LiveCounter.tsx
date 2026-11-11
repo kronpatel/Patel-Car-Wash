@@ -21,7 +21,7 @@ const STATS_DATA: CounterItem[] = [
     label: "Cars Washed This Week",
     target: 47,
     suffix: "",
-    description: "Across all 4 wash bays in Gurugram",
+    description: "Across all 4 wash bays in Gujarat",
     icon: Car,
     accentColor: "text-neon-blue border-neon-blue/40 bg-neon-blue/10",
   },

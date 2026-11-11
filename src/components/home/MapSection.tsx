@@ -21,11 +21,10 @@ export default function MapSection() {
             Visit Our Studio
           </span>
           <h2 className="text-3xl sm:text-4xl font-heading font-extrabold text-white tracking-tight">
-            Find Us in <span className="text-neon-blue">Gurugram</span>
+            Find Us in <span className="text-neon-blue">Gujarat</span>
           </h2>
           <p className="mt-3 text-sm sm:text-base text-gray-400">
-            Conveniently located in Sector 18 Commercial Auto Hub with spacious
-            wash bays and an air-conditioned customer lounge.
+            Conveniently located with spacious wash bays, professional equipment, and an air-conditioned customer lounge.
           </p>
         </div>
 
@@ -48,7 +47,7 @@ export default function MapSection() {
                   <h4 className="text-sm font-semibold text-white mb-1">
                     Studio Address
                   </h4>
-                  <p className="text-sm text-gray-300 leading-relaxed">
+                  <p className="text-sm text-gray-300 leading-relaxed font-medium">
                     {SHOP_CONFIG.address}
                   </p>
                 </div>
@@ -79,7 +78,7 @@ export default function MapSection() {
                 </div>
                 <div>
                   <h4 className="text-sm font-semibold text-white mb-1">
-                    Helpline & WhatsApp
+                    Helpline &amp; WhatsApp
                   </h4>
                   <a
                     href={`tel:${SHOP_CONFIG.phone}`}
@@ -97,7 +96,7 @@ export default function MapSection() {
               <div className="p-4 rounded-2xl bg-charcoal-850 border border-white/5 flex items-center gap-3">
                 <ShieldCheck className="w-5 h-5 text-gold shrink-0" />
                 <p className="text-xs text-gray-300">
-                  Free high-speed WiFi, artisanal coffee & live bay video feed in our lounge while you wait.
+                  Free high-speed WiFi, artisanal coffee &amp; live bay video feed in our lounge while you wait.
                 </p>
               </div>
             </div>
@@ -108,7 +107,7 @@ export default function MapSection() {
                 href={SHOP_CONFIG.directionsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 neon-glow-btn py-3 px-4 rounded-xl text-center text-sm font-semibold flex items-center justify-center gap-2"
+                className="flex-1 neon-glow-btn py-3.5 px-4 rounded-2xl text-center text-sm font-semibold flex items-center justify-center gap-2 shadow-neon-sm hover:scale-105 transition-all text-charcoal-950"
               >
                 <Navigation className="w-4 h-4" />
                 <span>Get Directions</span>
@@ -116,7 +115,7 @@ export default function MapSection() {
 
               <a
                 href={`tel:${SHOP_CONFIG.phone}`}
-                className="py-3 px-5 rounded-xl bg-charcoal-800 hover:bg-white/10 text-white text-sm font-medium border border-white/10 text-center flex items-center justify-center gap-2 transition-colors"
+                className="py-3.5 px-5 rounded-2xl bg-charcoal-800 hover:bg-white/10 text-white text-sm font-medium border border-white/10 text-center flex items-center justify-center gap-2 transition-colors"
               >
                 <Phone className="w-4 h-4 text-neon-blue" />
                 <span>Call Shop</span>
@@ -125,28 +124,28 @@ export default function MapSection() {
           </div>
 
           {/* Embedded Google Maps Container */}
-          <div className="lg:col-span-7 glass-panel rounded-3xl overflow-hidden border border-white/10 shadow-xl min-h-[360px] sm:min-h-[420px] relative">
+          <div className="lg:col-span-7 glass-panel rounded-3xl overflow-hidden border border-white/10 shadow-xl h-[360px] sm:h-[450px] lg:h-[500px] relative">
             <iframe
               src={SHOP_CONFIG.mapsEmbedUrl}
               width="100%"
               height="100%"
-              style={{ border: 0, minHeight: "380px" }}
+              style={{ border: 0 }}
               allowFullScreen={true}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="Patel car'spa & Detailing Location Map"
+              title="Patel Car Wash And Spa Location Map"
               className="w-full h-full grayscale-[0.3] contrast-125"
             />
 
-            {/* Quick Open Maps Overlay Button */}
+            {/* Direct Google Maps Link Button */}
             <a
-              href={SHOP_CONFIG.directionsUrl}
+              href={SHOP_CONFIG.placeLink || SHOP_CONFIG.directionsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Open in Google Maps app"
+              aria-label="Open in Google Maps"
               className="absolute top-4 right-4 glass-panel px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white border border-white/20 hover:border-neon-blue shadow-lg flex items-center gap-1.5 transition-colors backdrop-blur-md"
             >
-              <span>View Full Map</span>
+              <span>View on Google Maps</span>
               <ExternalLink className="w-3.5 h-3.5 text-neon-blue" />
             </a>
           </div>

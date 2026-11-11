@@ -31,21 +31,21 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"),
   title: {
-    default: "Patel car'spa & Detailing | Luxury Auto Spa in Gurugram",
+    default: "Patel car'spa & Detailing | Luxury Auto Spa in Gujarat",
     template: "%s | Patel car'spa & Detailing",
   },
   description:
-    "Patel car'spa & Detailing — Gurugram's premier luxury auto spa & detailing studio. High-pressure snow foam baths, interior steam sanitization, 9H nano-ceramic coating, and paint correction with guaranteed customer satisfaction.",
+    "Patel car'spa & Detailing — Gujarat's premier luxury auto spa & detailing studio. High-pressure snow foam baths, interior steam sanitization, 9H nano-ceramic coating, and paint correction with guaranteed customer satisfaction.",
   keywords: [
     "Patel car'spa & Detailing",
-    "car wash gurugram",
+    "car wash gujarat",
     "luxury car detailing",
     "ceramic coating",
     "paint correction",
     "foam wash",
     "interior steam clean",
     "bike wash",
-    "auto spa gurugram",
+    "auto spa gujarat",
   ],
   authors: [{ name: "Patel car'spa & Detailing" }],
   creator: "Patel car'spa & Detailing",
@@ -59,9 +59,9 @@ export const metadata: Metadata = {
     locale: "en_IN",
     url: "/",
     siteName: "Patel car'spa & Detailing",
-    title: "Patel car'spa & Detailing | Luxury Auto Spa in Gurugram",
+    title: "Patel car'spa & Detailing | Luxury Auto Spa in Gujarat",
     description:
-      "Experience showroom-grade paint correction, hydrophobic snow foam baths, and ceramic protection at Patel car'spa & Detailing in Gurugram.",
+      "Experience showroom-grade paint correction, hydrophobic snow foam baths, and ceramic protection at Patel car'spa & Detailing in Gujarat.",
     images: [
       {
         url: "/logo/logo.png",
@@ -73,9 +73,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Patel car'spa & Detailing | Luxury Auto Spa in Gurugram",
+    title: "Patel car'spa & Detailing | Luxury Auto Spa in Gujarat",
     description:
-      "Patel car'spa & Detailing — Gurugram's premier luxury auto spa & detailing studio. Snow foam wash, steam cleaning & ceramic coating.",
+      "Patel car'spa & Detailing — Gujarat's premier luxury auto spa & detailing studio. Snow foam wash, steam cleaning & ceramic coating.",
     images: ["/logo/logo.png"],
   },
   manifest: "/manifest.json",

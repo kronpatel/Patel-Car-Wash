@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Book a Wash Bay",
   description:
-    "Reserve your car wash or detailing appointment at Patel car'spa & Detailing Gurugram. Fast, scratch-free service with zero upfront payment.",
+    "Reserve your car wash or detailing appointment at Patel car'spa & Detailing Gujarat. Fast, scratch-free service with zero upfront payment.",
 };
 
 interface BookPageProps {

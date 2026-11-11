@@ -39,7 +39,7 @@ export default function Footer() {
             </Link>
 
             <p className="text-sm leading-relaxed text-gray-400">
-              Gurugram&apos;s premier luxury auto spa & detailing studio.
+              Gujarat&apos;s premier luxury auto spa &amp; detailing studio.
               Delivering high-pressure snow foam baths, interior steam
               sanitization, and 9H nano-ceramic protection with zero compromise.
             </p>
