@@ -1,5 +1,5 @@
 /**
- * CleanPro Complete TypeScript Definitions
+ * Patel car'spa & Detailing Complete TypeScript Definitions
  */
 
 export type VehicleType =
