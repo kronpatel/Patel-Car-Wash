@@ -60,8 +60,8 @@ export default async function AdminPage() {
   const initialBookings = allBookings;
 
   return (
-    <div className="py-10 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+    <div className="w-full py-10 sm:py-16">
+      <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 space-y-10">
         {/* Operations Header */}
         <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-gold/30 bg-charcoal-850/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">

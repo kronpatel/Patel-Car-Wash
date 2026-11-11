@@ -43,8 +43,8 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div className="py-10 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="w-full py-10 sm:py-16">
+      <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
         <CustomerDashboardView
           user={userProfile}
           initialBookings={bookings}

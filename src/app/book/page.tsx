@@ -51,8 +51,8 @@ export default async function BookPage({ searchParams }: BookPageProps) {
   const initialMembership = searchParams.membership || undefined;
 
   return (
-    <div className="py-10 sm:py-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="w-full py-10 sm:py-16">
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-8 lg:px-12">
         {/* Page Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-neon-blue/10 border border-neon-blue/30 text-xs font-semibold text-neon-blue mb-4">

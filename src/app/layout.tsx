@@ -93,7 +93,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${poppins.variable} font-sans bg-charcoal-900 text-gray-100 antialiased min-h-screen flex flex-col justify-between selection:bg-neon-blue/30 selection:text-neon-blue`}
+        className={`${inter.variable} ${poppins.variable} font-sans bg-charcoal-900 text-gray-100 antialiased w-full min-h-screen overflow-x-hidden flex flex-col justify-between selection:bg-neon-blue/30 selection:text-neon-blue`}
       >
         <AuthProvider>
           {/* Animated Splash Screen with bubble/foam simulation (sessionStorage guarded) */}
@@ -103,7 +103,7 @@ export default function RootLayout({
           <Header />
 
           {/* Main Page Content */}
-          <main className="flex-grow relative z-10">{children}</main>
+          <main className="w-full flex-grow relative z-10">{children}</main>
 
           {/* Floating WhatsApp Quick Action Button */}
           <WhatsAppFloatingBtn />
