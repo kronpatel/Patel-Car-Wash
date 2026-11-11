@@ -22,8 +22,8 @@ export default function Footer() {
 
   return (
     // STRICT CLIENT REQUIREMENT: Footer MUST be PURE BLACK (#000000)
-    <footer className="bg-[#000000] border-t border-charcoal-800 text-gray-400 relative z-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
+    <footer className="w-full bg-black border-t border-charcoal-800 text-gray-400 relative z-20">
+      <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 2xl:px-20 pt-16 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           {/* Brand Info & Mission */}
           <div className="space-y-4">
