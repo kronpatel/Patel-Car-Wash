@@ -96,8 +96,8 @@ function CountUpNumber({
 
 export default function LiveCounter() {
   return (
-    <section className="py-16 sm:py-24 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <section className="w-full py-16 sm:py-24 relative overflow-hidden">
+      <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 relative z-10">
         {/* Live Banner Header */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 pb-6 border-b border-white/5">
           <div className="flex items-center gap-3">

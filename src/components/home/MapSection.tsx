@@ -13,8 +13,8 @@ import { SHOP_CONFIG } from "@/lib/constants";
 
 export default function MapSection() {
   return (
-    <section id="location" className="py-20 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="location" className="w-full py-20 relative">
+      <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
         {/* Section Heading */}
         <div className="text-center max-w-2xl mx-auto mb-14">
           <span className="text-xs uppercase tracking-widest font-semibold text-neon-blue px-3.5 py-1.5 rounded-full bg-neon-blue/10 border border-neon-blue/20 inline-block mb-3">

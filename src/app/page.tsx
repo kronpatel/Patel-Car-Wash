@@ -4,14 +4,14 @@ import { Calendar, Phone, Sparkles, ArrowRight, ShieldCheck } from "lucide-react
 import Hero from "@/components/home/Hero";
 import TrustBadges from "@/components/home/TrustBadges";
 import LiveCounter from "@/components/home/LiveCounter";
-import BeforeAfterSlider from "@/components/home/BeforeAfterSlider";
+import StudioGallery from "@/components/home/StudioGallery";
 import Testimonials from "@/components/home/Testimonials";
 import MapSection from "@/components/home/MapSection";
 import { SHOP_CONFIG } from "@/lib/constants";
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="w-full flex flex-col min-h-screen">
       {/* 1. Hero Section */}
       <Hero />
 
@@ -21,15 +21,15 @@ export default function HomePage() {
       {/* 3. Live Activity & Booking Telemetry Counter */}
       <LiveCounter />
 
-      {/* 4. Interactive Before/After Detailing Comparison Slider */}
-      <BeforeAfterSlider />
+      {/* 4. Studio Craftsmen & Workers Photo Gallery */}
+      <StudioGallery />
 
       {/* 5. Customer Testimonials & Reviews */}
       <Testimonials />
 
       {/* Conversion Upsell CTA Banner */}
-      <section className="py-16 relative overflow-hidden bg-gradient-to-r from-charcoal-900 via-charcoal-850 to-charcoal-900 border-y border-white/5">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+      <section className="w-full py-16 sm:py-20 relative overflow-hidden bg-gradient-to-r from-charcoal-900 via-charcoal-850 to-charcoal-900 border-y border-white/5">
+        <div className="w-full max-w-[1500px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-neon-blue/10 border border-neon-blue/30 text-xs font-semibold text-neon-blue mb-4">
             <Sparkles className="w-3.5 h-3.5 text-gold" />
             <span>Guaranteed Spotless Finish</span>

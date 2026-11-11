@@ -16,23 +16,23 @@ import {
 
 export default function Hero() {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden py-16 sm:py-24">
-      {/* Ambient Luxury Background Lights */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-neon-blue/15 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute top-1/3 -left-32 w-[400px] h-[400px] bg-gold/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute -bottom-20 -right-20 w-[450px] h-[450px] bg-neon-blue/10 rounded-full blur-[130px] pointer-events-none" />
+    <section className="w-full relative min-h-[90vh] flex items-center justify-center overflow-hidden py-16 sm:py-24">
+      {/* Ambient Luxury Background Lights stretching full viewport */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[700px] bg-neon-blue/15 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute top-1/4 -left-40 w-[600px] h-[600px] bg-gold/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 -right-40 w-[700px] h-[700px] bg-neon-blue/15 rounded-full blur-[150px] pointer-events-none" />
 
-      {/* Subtle Background Grid Pattern */}
+      {/* Subtle Background Grid Pattern spanning full bleed */}
       <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        className="absolute inset-0 opacity-[0.03] pointer-events-none w-full"
         style={{
           backgroundImage: `radial-gradient(circle at 1px 1px, #ffffff 1px, transparent 0)`,
           backgroundSize: "32px 32px",
         }}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-        <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
+      <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 relative z-10">
+        <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
           {/* Eyebrow Badge */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -123,7 +123,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.45 }}
-            className="mt-14 sm:mt-16 grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 w-full max-w-3xl"
+            className="mt-14 sm:mt-16 grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 w-full max-w-4xl lg:max-w-5xl"
           >
             {/* Stat 1 */}
             <div className="glass-panel p-4 rounded-2xl border border-white/5 flex items-center gap-3.5 text-left">

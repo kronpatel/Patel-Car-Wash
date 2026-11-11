@@ -13,8 +13,8 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 
 export default function TrustBadges() {
   return (
-    <section className="py-14 sm:py-20 relative z-10 border-y border-white/5 bg-charcoal-950/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="w-full py-14 sm:py-20 relative z-10 border-y border-white/5 bg-charcoal-950/60">
+      <div className="w-full max-w-[1700px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neon-blue/10 border border-neon-blue/20 text-xs font-semibold text-neon-blue uppercase tracking-wider mb-3">
