@@ -1,0 +1,25 @@
+{
+  "name": "CleanPro Car Wash & Detailing",
+  "short_name": "CleanPro",
+  "description": "Premium luxury car wash, foam wash, interior deep cleaning & ceramic detailing.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F0F12",
+  "theme_color": "#00D4FF",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "automotive", "lifestyle"]
+}
