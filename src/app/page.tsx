@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Calendar, Phone, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
 import Hero from "@/components/home/Hero";
+import BrandMarquee from "@/components/home/BrandMarquee";
 import TrustBadges from "@/components/home/TrustBadges";
 import LiveCounter from "@/components/home/LiveCounter";
 import StudioGallery from "@/components/home/StudioGallery";
@@ -15,7 +16,10 @@ export default function HomePage() {
       {/* 1. Hero Section */}
       <Hero />
 
-      {/* 2. Trust Badges (5-Star, Eco, Certified, Scratch-Free) */}
+      {/* 2. Infinite Brand Marquee Ticker */}
+      <BrandMarquee />
+
+      {/* 3. Trust Badges (5-Star, Eco, Certified, Scratch-Free) */}
       <TrustBadges />
 
       {/* 3. Live Activity & Booking Telemetry Counter */}
