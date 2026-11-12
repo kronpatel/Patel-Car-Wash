@@ -86,10 +86,10 @@ export default function Header() {
               <Image
                 src="/logo/logo.svg"
                 alt="Patel Car'spa & Detailing Studio"
-                width={220}
-                height={80}
+                width={170}
+                height={57}
                 priority
-                className="object-contain h-10 sm:h-12 md:h-14 w-auto max-w-[180px] sm:max-w-[220px] drop-shadow-[0_0_1px_rgba(255,255,255,0.7)] transition-transform group-hover:scale-105"
+                className="object-contain h-8 sm:h-10 md:h-12 w-auto max-w-[140px] sm:max-w-[170px] drop-shadow-[0_0_1px_rgba(255,255,255,0.7)] transition-transform group-hover:scale-105"
               />
             </Link>
 
