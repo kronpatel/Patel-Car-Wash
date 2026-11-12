@@ -156,4 +156,27 @@ body {
     background-size: 200% 100%;
     animation: shimmer 3s infinite;
   }
+
+  /* Infinite Marquee Animation for Ticker */
+  @keyframes marquee {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+
+  .animate-marquee {
+    display: flex;
+    flex-shrink: 0;
+    will-change: transform;
+    animation: marquee 32s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-marquee {
+      animation-duration: 90s;
+    }
+  }
 }

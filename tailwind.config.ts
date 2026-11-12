@@ -80,8 +80,13 @@ const config: Config = {
         "pulse-glow": "pulseGlow 2.5s ease-in-out infinite",
         "shimmer": "shimmer 2.2s infinite linear",
         "foam-expand": "foamExpand 1.5s ease-out forwards",
+        marquee: "marquee 32s linear infinite",
       },
       keyframes: {
+        marquee: {
+          "0%": { transform: "translateX(0%)" },
+          "100%": { transform: "translateX(-100%)" },
+        },
         floatBubble: {
           "0%, 100%": { transform: "translateY(0px) scale(1)", opacity: "0.8" },
           "50%": { transform: "translateY(-14px) scale(1.08)", opacity: "1" },
