@@ -21,6 +21,7 @@ import CoinBadge from "@/components/ui/CoinBadge";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
+  { label: "Home", href: "/" },
   { label: "Services", href: "/services" },
   { label: "Pricing", href: "/pricing" },
   { label: "Gallery", href: "/#gallery" },
