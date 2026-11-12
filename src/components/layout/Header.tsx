@@ -18,7 +18,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 import CoinBadge from "@/components/ui/CoinBadge";
-import ThemeToggle from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -118,10 +117,8 @@ export default function Header() {
             </nav>
           </div>
 
-          {/* Right Action Cluster (Theme, Coins, User / Auth, Book CTA) */}
+          {/* Right Action Cluster (Coins, User / Auth, Book CTA) */}
           <div className="hidden md:flex items-center gap-3">
-            <ThemeToggle />
-
             {session?.user ? (
               <div className="flex items-center gap-2.5" ref={userMenuRef}>
                 {/* Clean Coins Badge */}
@@ -217,9 +214,8 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Mobile Menu Toggle & Theme */}
-          <div className="flex md:hidden items-center gap-2">
-            <ThemeToggle />
+          {/* Mobile Menu Toggle */}
+          <div className="flex md:hidden items-center">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle Navigation Drawer"
