@@ -241,7 +241,7 @@ export default function BookingCard({
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 rounded-xl bg-charcoal-800 hover:bg-charcoal-750 text-gray-400 hover:text-white border border-white/10 transition-colors"
-              title="Get directions to Patel car'spa & Detailing"
+              title="Get directions to Patel Car'spa & Detailing Studio"
             >
               <Share2 className="w-4 h-4" />
             </a>
