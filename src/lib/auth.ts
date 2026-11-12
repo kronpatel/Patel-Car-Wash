@@ -10,7 +10,7 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     CredentialsProvider({
-      name: "Patel car'spa & Detailing Credentials",
+      name: "Patel Car'spa & Detailing Studio Credentials",
       credentials: {
         email: { label: "Email", type: "email", placeholder: "you@example.com" },
         password: { label: "Password", type: "password" },

@@ -10,7 +10,7 @@ export default function WhatsAppFloatingBtn() {
   // Clean phone number for WhatsApp API link
   const rawNumber = SHOP_CONFIG.whatsappNumber.replace(/[^0-9]/g, "");
   const defaultMessage = encodeURIComponent(
-    "Hi Patel car'spa & Detailing! I'd like to inquire about booking a luxury car wash or detailing service."
+    "Hi Patel Car'spa & Detailing Studio! I'd like to inquire about booking a luxury car wash or detailing service."
   );
   const waUrl = `https://wa.me/${rawNumber}?text=${defaultMessage}`;
 
@@ -35,7 +35,7 @@ export default function WhatsAppFloatingBtn() {
         href={waUrl}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Open WhatsApp live chat with Patel car'spa & Detailing"
+        aria-label="Open WhatsApp live chat with Patel Car'spa & Detailing Studio"
         className="group relative flex items-center justify-center w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg hover:shadow-emerald-500/50 transition-all duration-300 hover:scale-105"
       >
         {/* Radar ping ring */}

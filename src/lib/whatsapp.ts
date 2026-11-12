@@ -133,7 +133,7 @@ export async function sendBookingConfirmationWhatsApp(params: {
   const message = [
     `✅ *Booking Confirmed!*`,
     ``,
-    `Hi ${params.customerName}, your wash appointment is booked at *Patel car'spa & Detailing*.`,
+    `Hi ${params.customerName}, your wash appointment is booked at *Patel Car'spa & Detailing Studio*.`,
     ``,
     `📋 *Booking ID:* ${params.bookingId}`,
     `🚗 *Vehicle:* ${params.vehicleType} (${params.vehicleNumber})`,
@@ -147,7 +147,7 @@ export async function sendBookingConfirmationWhatsApp(params: {
     `💡 *No advance payment needed. Just show this Booking ID at the shop.*`,
     ``,
     `We'll notify you on WhatsApp as soon as your vehicle is washed & ready! 🚗✨`,
-    `— *Patel car'spa & Detailing*`,
+    `— *Patel Car'spa & Detailing Studio*`,
   ].join("\n");
 
   return sendWhatsApp(params.phone, message);
@@ -177,7 +177,7 @@ export async function sendVehicleReadyWhatsApp(params: {
     `${SHOP_CONFIG.address}`,
     `🗺️ *Directions:* ${SHOP_CONFIG.directionsUrl}`,
     ``,
-    `Thank you for choosing Patel car'spa & Detailing! Safe driving! 🌟`,
+    `Thank you for choosing Patel Car'spa & Detailing Studio! Safe driving! 🌟`,
   ].join("\n");
 
   return sendWhatsApp(params.phone, message);
@@ -192,10 +192,10 @@ export async function sendAppointmentReminderWhatsApp(params: {
   timeSlot: string;
 }): Promise<WhatsAppSendResult> {
   const message = [
-    `⏰ *Reminder: Your Patel car'spa & Detailing appointment is in 1 Hour!*`,
+    `⏰ *Reminder: Your Patel Car'spa & Detailing Studio appointment is in 1 Hour!*`,
     ``,
     `Hi ${params.customerName}, this is a gentle reminder that your slot (${params.timeSlot}) starts soon.`,
-    `See you soon at Patel car'spa & Detailing! 🚗💨`,
+    `See you soon at Patel Car'spa & Detailing Studio! 🚗💨`,
   ].join("\n");
 
   return sendWhatsApp(params.phone, message);

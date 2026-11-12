@@ -1,5 +1,5 @@
 /**
- * Patel car'spa & Detailing Complete TypeScript Definitions
+ * Patel Car'spa & Detailing Studio Complete TypeScript Definitions
  */
 
 export type VehicleType =

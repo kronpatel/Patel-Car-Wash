@@ -1,7 +1,7 @@
 import { VehicleType, PlanType, ServiceItem } from "@/types";
 
 /**
- * Patel car'spa & Detailing Master Constants & Configurations
+ * Patel Car'spa & Detailing Studio Master Constants & Configurations
  */
 
 export const STUDIO_COORDINATES = {
@@ -18,7 +18,7 @@ export const MAPS_DIRECTIONS_URL =
 export const MAPS_PLACE_LINK = "https://maps.app.goo.gl/GY3vYw9UrNuz2Wng7";
 
 export const SHOP_CONFIG = {
-  name: process.env.NEXT_PUBLIC_SHOP_NAME || "Patel car'spa & Detailing",
+  name: process.env.NEXT_PUBLIC_SHOP_NAME || "Patel Car'spa & Detailing Studio",
   phone: process.env.NEXT_PUBLIC_SHOP_PHONE || "+91 96243 48480",
   whatsappNumber: process.env.NEXT_PUBLIC_SHOP_WHATSAPP || "+919624348480",
   email: process.env.NEXT_PUBLIC_SHOP_EMAIL || "contact@patelcarspa.com",
@@ -318,7 +318,7 @@ export const TESTIMONIALS = [
     vehicle: "BMW 520d",
     rating: 5,
     comment:
-      "Patel car'spa & Detailing did a 3-stage paint correction and ceramic coat on my BMW. The car looks glossier than when it left the showroom. Incredible attention to detail!",
+      "Patel Car'spa & Detailing Studio did a 3-stage paint correction and ceramic coat on my BMW. The car looks glossier than when it left the showroom. Incredible attention to detail!",
     date: "2 weeks ago",
   },
   {
@@ -327,7 +327,7 @@ export const TESTIMONIALS = [
     vehicle: "Hyundai Creta",
     rating: 5,
     comment:
-      "The interior deep clean is miraculous. My kids had spilled juice and snacks in the rear seats, and Patel car'spa & Detailing made it look and smell brand new. Highly recommend!",
+      "The interior deep clean is miraculous. My kids had spilled juice and snacks in the rear seats, and Patel Car'spa & Detailing Studio made it look and smell brand new. Highly recommend!",
     date: "1 month ago",
   },
   {
@@ -336,7 +336,7 @@ export const TESTIMONIALS = [
     vehicle: "Ducati Monster 821",
     rating: 5,
     comment:
-      "Finding people who know how to wash a superbike without damaging sensitive electronics is tough. Patel car'spa & Detailing's bike wash is second to none.",
+      "Finding people who know how to wash a superbike without damaging sensitive electronics is tough. Patel Car'spa & Detailing Studio's bike wash is second to none.",
     date: "3 weeks ago",
   },
 ];
