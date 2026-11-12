@@ -79,38 +79,44 @@ export default function Header() {
     >
       <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
         <div className="flex items-center justify-between">
-          {/* Brand Logo */}
-          <Link href="/" className="flex items-center group bg-transparent">
-            <Image
-              src="/logo/logo.png"
-              alt="Patel car'spa & Detailing"
-              width={220}
-              height={80}
-              priority
-              className="object-contain h-10 sm:h-12 md:h-14 w-auto max-w-[180px] sm:max-w-[220px] drop-shadow-[0_0_1px_rgba(255,255,255,0.7)] transition-transform group-hover:scale-105"
-            />
-          </Link>
+          {/* Left: Brand Logo + Desktop Navigation Links */}
+          <div className="flex items-center gap-8 lg:gap-10">
+            {/* Brand Logo */}
+            <Link href="/" className="flex items-center group bg-transparent shrink-0">
+              <Image
+                src="/logo/logo.png"
+                alt="Patel car'spa & Detailing"
+                width={220}
+                height={80}
+                priority
+                className="object-contain h-10 sm:h-12 md:h-14 w-auto max-w-[180px] sm:max-w-[220px] drop-shadow-[0_0_1px_rgba(255,255,255,0.7)] transition-transform group-hover:scale-105"
+              />
+            </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 glass-panel px-4 py-1.5 rounded-full border border-white/5">
-            {NAV_LINKS.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
-                    isActive
-                      ? "text-neon-blue bg-neon-blue/10 shadow-neon-sm"
-                      : "text-gray-300 hover:text-white hover:bg-white/5"
-                  )}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </nav>
+            {/* Desktop Navigation Links — Left Aligned, Clean & No Pill Container */}
+            <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+              {NAV_LINKS.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      "text-sm font-medium transition-colors relative py-1",
+                      isActive
+                        ? "text-neon-blue font-semibold"
+                        : "text-gray-300 hover:text-white"
+                    )}
+                  >
+                    <span>{link.label}</span>
+                    {isActive && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-neon-blue rounded-full" />
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
 
           {/* Right Action Cluster (Theme, Coins, User / Auth, Book CTA) */}
           <div className="hidden md:flex items-center gap-3">
