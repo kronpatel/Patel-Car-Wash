@@ -84,8 +84,8 @@ export default function SplashScreen() {
             {/* Official Studio Logo */}
             <div className="relative mb-6 drop-shadow-[0_0_25px_rgba(0,210,255,0.25)]">
               <Image
-                src="/logo/logo.png"
-                alt="Patel car'spa & Detailing"
+                src="/logo/logo.svg"
+                alt="Patel Car'spa & Detailing Studio"
                 width={260}
                 height={95}
                 priority

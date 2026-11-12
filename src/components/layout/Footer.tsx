@@ -30,8 +30,8 @@ export default function Footer() {
           <div className="space-y-4">
             <Link href="/" className="inline-block group bg-transparent">
               <Image
-                src="/logo/logo.png"
-                alt="Patel car'spa & Detailing"
+                src="/logo/logo.svg"
+                alt="Patel Car'spa & Detailing Studio"
                 width={220}
                 height={80}
                 className="object-contain h-11 sm:h-12 w-auto max-w-[200px] sm:max-w-[240px] drop-shadow-[0_0_1px_rgba(255,255,255,0.7)] transition-transform group-hover:scale-105"
@@ -50,7 +50,7 @@ export default function Footer() {
                 href={`https://wa.me/${rawWhatsApp}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Contact Patel car'spa & Detailing on WhatsApp"
+                aria-label="Contact Patel Car'spa & Detailing Studio on WhatsApp"
                 className="w-9 h-9 rounded-xl bg-charcoal-900 hover:bg-emerald-500/20 text-gray-300 hover:text-emerald-400 border border-white/10 flex items-center justify-center transition-colors"
               >
                 <MessageCircle className="w-4 h-4" />
@@ -59,7 +59,7 @@ export default function Footer() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Follow Patel car'spa & Detailing on Instagram"
+                aria-label="Follow Patel Car'spa & Detailing Studio on Instagram"
                 className="w-9 h-9 rounded-xl bg-charcoal-900 hover:bg-pink-500/20 text-gray-300 hover:text-pink-400 border border-white/10 flex items-center justify-center transition-colors"
               >
                 <Instagram className="w-4 h-4" />
@@ -68,7 +68,7 @@ export default function Footer() {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Patel car'spa & Detailing on Facebook"
+                aria-label="Patel Car'spa & Detailing Studio on Facebook"
                 className="w-9 h-9 rounded-xl bg-charcoal-900 hover:bg-blue-500/20 text-gray-300 hover:text-blue-400 border border-white/10 flex items-center justify-center transition-colors"
               >
                 <Facebook className="w-4 h-4" />
@@ -194,7 +194,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-charcoal-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
-          <p>© {currentYear} Patel car&apos;spa &amp; Detailing. All rights reserved.</p>
+          <p>© {currentYear} Patel Car&apos;spa &amp; Detailing Studio. All rights reserved.</p>
           <p className="flex items-center gap-1">
             Engineered with pride for automobile enthusiasts.
           </p>

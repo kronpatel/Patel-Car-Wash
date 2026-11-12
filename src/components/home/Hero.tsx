@@ -110,7 +110,7 @@ export default function Hero() {
 
             {/* Sleek Widened Sub-headline */}
             <p className="text-xs sm:text-sm md:text-base font-mono uppercase tracking-[0.38em] text-gray-300 font-semibold mt-2.5 pl-1">
-              car&apos;spa &amp; Detailing
+              Car&apos;spa &amp; Detailing Studio
             </p>
           </motion.div>
 

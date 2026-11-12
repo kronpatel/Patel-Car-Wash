@@ -84,8 +84,8 @@ export default function Header() {
             {/* Brand Logo */}
             <Link href="/" className="flex items-center group bg-transparent shrink-0">
               <Image
-                src="/logo/logo.png"
-                alt="Patel car'spa & Detailing"
+                src="/logo/logo.svg"
+                alt="Patel Car'spa & Detailing Studio"
                 width={220}
                 height={80}
                 priority
