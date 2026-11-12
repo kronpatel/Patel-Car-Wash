@@ -31,13 +31,13 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"),
   title: {
-    default: "Patel car'spa & Detailing | Luxury Auto Spa in Gujarat",
-    template: "%s | Patel car'spa & Detailing",
+    default: "Patel Car'spa & Detailing Studio | Luxury Auto Spa in Gujarat",
+    template: "%s | Patel Car'spa & Detailing Studio",
   },
   description:
-    "Patel car'spa & Detailing — Gujarat's premier luxury auto spa & detailing studio. High-pressure snow foam baths, interior steam sanitization, 9H nano-ceramic coating, and paint correction with guaranteed customer satisfaction.",
+    "Patel Car'spa & Detailing Studio — Gujarat's premier luxury auto spa & detailing studio. High-pressure snow foam baths, interior steam sanitization, 9H nano-ceramic coating, and paint correction with guaranteed customer satisfaction.",
   keywords: [
-    "Patel car'spa & Detailing",
+    "Patel Car'spa & Detailing Studio",
     "car wash gujarat",
     "luxury car detailing",
     "ceramic coating",
@@ -47,9 +47,9 @@ export const metadata: Metadata = {
     "bike wash",
     "auto spa gujarat",
   ],
-  authors: [{ name: "Patel car'spa & Detailing" }],
-  creator: "Patel car'spa & Detailing",
-  publisher: "Patel car'spa & Detailing",
+  authors: [{ name: "Patel Car'spa & Detailing Studio" }],
+  creator: "Patel Car'spa & Detailing Studio",
+  publisher: "Patel Car'spa & Detailing Studio",
   robots: {
     index: true,
     follow: true,
@@ -58,25 +58,25 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: "/",
-    siteName: "Patel car'spa & Detailing",
-    title: "Patel car'spa & Detailing | Luxury Auto Spa in Gujarat",
+    siteName: "Patel Car'spa & Detailing Studio",
+    title: "Patel Car'spa & Detailing Studio | Luxury Auto Spa in Gujarat",
     description:
-      "Experience showroom-grade paint correction, hydrophobic snow foam baths, and ceramic protection at Patel car'spa & Detailing in Gujarat.",
+      "Experience showroom-grade paint correction, hydrophobic snow foam baths, and ceramic protection at Patel Car'spa & Detailing Studio in Gujarat.",
     images: [
       {
-        url: "/logo/logo.png",
+        url: "/logo/logo.svg",
         width: 512,
         height: 512,
-        alt: "Patel car'spa & Detailing",
+        alt: "Patel Car'spa & Detailing Studio",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Patel car'spa & Detailing | Luxury Auto Spa in Gujarat",
+    title: "Patel Car'spa & Detailing Studio | Luxury Auto Spa in Gujarat",
     description:
-      "Patel car'spa & Detailing — Gujarat's premier luxury auto spa & detailing studio. Snow foam wash, steam cleaning & ceramic coating.",
-    images: ["/logo/logo.png"],
+      "Patel Car'spa & Detailing Studio — Gujarat's premier luxury auto spa & detailing studio. Snow foam wash, steam cleaning & ceramic coating.",
+    images: ["/logo/logo.svg"],
   },
   manifest: "/manifest.json",
   icons: {

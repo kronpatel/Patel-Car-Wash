@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Admin Operations Workstation",
-  description: "Patel car'spa & Detailing owner management terminal for live bay appointments, customer status & revenue.",
+  description: "Patel Car'spa & Detailing Studio owner management terminal for live bay appointments, customer status & revenue.",
 };
 
 export default async function AdminPage() {

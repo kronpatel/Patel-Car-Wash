@@ -97,8 +97,8 @@ export default function SignupPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-block group mb-4 bg-transparent">
             <Image
-              src="/logo/logo.png"
-              alt="Patel car'spa & Detailing"
+              src="/logo/logo.svg"
+              alt="Patel Car'spa & Detailing Studio"
               width={200}
               height={70}
               priority
@@ -109,7 +109,7 @@ export default function SignupPage() {
             Create Your Account
           </h1>
           <p className="text-sm text-gray-400 mt-1">
-            Join Patel car&apos;spa &amp; Detailing to earn Clean Coins, manage appointments &amp; track washes
+            Join Patel Car&apos;spa &amp; Detailing Studio to earn Clean Coins, manage appointments &amp; track washes
           </p>
         </div>
 

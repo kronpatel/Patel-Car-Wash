@@ -80,8 +80,8 @@ function LoginForm() {
       <div className="text-center mb-8">
         <Link href="/" className="inline-block group mb-4 bg-transparent">
           <Image
-            src="/logo/logo.png"
-            alt="Patel car'spa & Detailing"
+            src="/logo/logo.svg"
+            alt="Patel Car'spa & Detailing Studio"
             width={200}
             height={70}
             priority
@@ -184,7 +184,7 @@ function LoginForm() {
               </>
             ) : (
               <>
-                <span>Sign In to Patel car&apos;spa &amp; Detailing</span>
+                <span>Sign In to Patel Car&apos;spa &amp; Detailing Studio</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -194,7 +194,7 @@ function LoginForm() {
         {/* Demo Fast Login Trigger */}
         <div className="mt-6 pt-5 border-t border-white/5 text-center">
           <p className="text-xs text-gray-400 mb-2">
-            Testing Patel car&apos;spa &amp; Detailing Admin Workstation?
+            Testing Patel Car&apos;spa &amp; Detailing Studio Admin Workstation?
           </p>
           <button
             type="button"

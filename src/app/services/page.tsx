@@ -73,7 +73,7 @@ export default function ServicesPage() {
               Our 4-Stage Scratch-Safe Protocol
             </h2>
             <p className="mt-3 text-sm text-gray-400">
-              Why luxury vehicle owners trust Patel car&apos;spa &amp; Detailing with their most prized
+              Why luxury vehicle owners trust Patel Car&apos;spa &amp; Detailing Studio with their most prized
               possessions.
             </p>
           </div>
