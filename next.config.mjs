@@ -2,6 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
+    // Allow the owner's own logo.svg (and any local SVG assets) to render via next/image.
+    // Safe here because these SVGs are first-party assets, not user-uploaded content.
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "attachment",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
         protocol: "https",

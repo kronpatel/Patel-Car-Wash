@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import {
@@ -91,27 +92,29 @@ export default function Hero() {
             <span>Premium Car Care Services</span>
           </motion.div>
 
-          {/* CRUCIAL CENTERPIECE: HUGE BOLD ITALICIZED "PATEL" */}
+          {/* CRUCIAL CENTERPIECE: SHOP LOGO */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.35, delay: 0.05 }}
-            className="w-full"
+            className="w-full relative"
           >
-            <h1
-              className="text-7xl sm:text-8xl md:text-9xl font-black italic tracking-tighter text-[#E50914] uppercase leading-[0.9] select-none"
-              style={{
-                textShadow:
-                  "0 0 25px rgba(229, 9, 20, 0.7), 0 0 65px rgba(229, 9, 20, 0.4), 0 0 100px rgba(229, 9, 20, 0.2)",
-              }}
-            >
-              PATEL
-            </h1>
+            {/* The logo itself — aspect ratio matches the SVG viewBox (23500x7900 ≈ 2.97:1) */}
+            <div className="relative">
+              <Image
+                src="/logo/logo.svg"
+                alt="Patel Car'spa & Detailing Studio"
+                width={500}
+                height={168}
+                priority
+                className="w-[300px] md:w-[450px] lg:w-[500px] h-auto object-contain select-none drop-shadow-[0_0_1px_rgba(255,255,255,0.5)]"
+              />
+            </div>
 
-            {/* Sleek Widened Sub-headline */}
-            <p className="text-xs sm:text-sm md:text-base font-mono uppercase tracking-[0.38em] text-gray-300 font-semibold mt-2.5 pl-1">
+            {/* Sleek Widened Sub-headline
+            <p className="text-xs sm:text-sm md:text-base font-mono uppercase tracking-[0.38em] text-gray-300 font-semibold mt-3 pl-1">
               Car&apos;spa &amp; Detailing Studio
-            </p>
+            </p> */}
           </motion.div>
 
           {/* Sub-headline: Drive Clean. Shine Bright. */}
