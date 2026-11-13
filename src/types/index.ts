@@ -185,3 +185,7 @@ export interface BookingFormData {
   useCleanCoins: boolean;
   couponCode?: string;
 }
+
+// Re-export Employee Panel Staff Types
+export * from "./staff";
+

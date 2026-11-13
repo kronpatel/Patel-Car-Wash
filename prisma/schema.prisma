@@ -38,8 +38,40 @@ enum CoinTxType {
   redeemed
 }
 
+// ─── NEW ENUMS (Employee Panel) ─────────────────────────────
+
+enum StaffStatus {
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  LEAVE
+  LATE
+}
+
+enum AttendanceMethod {
+  QR
+  MANUAL
+}
+
+enum PaymentMode {
+  CASH
+  UPI
+  BANK
+}
+
+enum AdvanceStatus {
+  OPEN
+  CLOSED
+}
+
 // ─────────────────────────────────────────────────────────────
-// MODELS
+// EXISTING MODELS (Unchanged)
 // ─────────────────────────────────────────────────────────────
 
 model User {
@@ -55,7 +87,6 @@ model User {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
-  // Relationships
   bookings         Booking[]
   coinTransactions CoinTransaction[]
   promoUsages      PromoCodeUsage[]
@@ -68,18 +99,18 @@ model User {
 
 model Booking {
   id                     String            @id @default(cuid())
-  bookingId              String            @unique // e.g. "CW-2026-0001"
+  bookingId              String            @unique
   userId                 String
   user                   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   customerName           String
   customerPhone          String
   customerEmail          String
   service                String
-  plan                   String            // "Basic Wash" | "Premium Wash" | "Full Detailing"
-  vehicleType            String            // "Small Sedan" | "Pickup" | "SUV" | "Minibus" | "Bike"
-  vehicleNumber          String            // e.g. "GJ-03-AJ-7231"
-  date                   String            // YYYY-MM-DD
-  timeSlot               String            // "12:00 PM - 01:00 PM"
+  plan                   String
+  vehicleType            String
+  vehicleNumber          String
+  date                   String
+  timeSlot               String
   address                String?           @db.Text
   notes                  String?           @db.Text
   basePrice              Float
@@ -87,9 +118,8 @@ model Booking {
   discount               Float             @default(0)
   finalPrice             Float
   status                 BookingStatus     @default(confirmed)
-  qrCode                 String?           @db.MediumText // Base64 data URL
+  qrCode                 String?           @db.MediumText
 
-  // WhatsApp notification delivery flags
   whatsappConfirmed      Boolean           @default(false)
   whatsappReady          Boolean           @default(false)
   whatsappReminder       Boolean           @default(false)
@@ -97,7 +127,6 @@ model Booking {
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
 
-  // Relationships
   coinTransactions       CoinTransaction[]
   promoCodeUsage         PromoCodeUsage?
 
@@ -133,16 +162,12 @@ model PromoCode {
   expiryDate         DateTime
   isActive           Boolean           @default(true)
 
-  // KEY FEATURE: Configurable per-user limit. 1 = single use per account.
   usageLimitPerUser  Int               @default(1)
-
-  // Optional cap on total redemptions across all users
   totalUsageLimit    Int?
 
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
 
-  // Relationships
   usages             PromoCodeUsage[]
 
   @@index([code])
@@ -154,20 +179,133 @@ model PromoCodeUsage {
   id           String     @id @default(cuid())
   promoCodeId  String
   promoCodeRef PromoCode  @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
-  promoCode    String     // Denormalized for display/audit
+  promoCode    String
 
   userId       String
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userName     String     // Denormalized for display/audit
+  userName     String
 
   bookingId    String     @unique
   booking      Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  bookingRef   String     // e.g. "CW-2026-0001"
+  bookingRef   String
 
   usedAt       DateTime   @default(now())
 
-  // Compound index for fast per-user limit enforcement
   @@index([promoCodeId, userId])
   @@index([userId])
   @@map("promo_code_usages")
+}
+
+// ─────────────────────────────────────────────────────────────
+// NEW MODELS (Employee Panel)
+// ─────────────────────────────────────────────────────────────
+
+model Staff {
+  id           String      @id @default(cuid())
+  staffId      String      @unique          // EMP001, EMP002...
+  name         String
+  photo        String?                       // URL / path
+  mobile       String      @unique           // Login ID
+  password     String                        // bcrypt hashed (default = mobile)
+  address      String?     @db.Text
+  joiningDate  DateTime
+  role         String                        // Manager / Cashier / Helper / Salesman
+  status       StaffStatus @default(ACTIVE)
+  baseSalary   Float       @default(0)
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  attendances  Attendance[]
+  salaries     Salary[]
+  advances     Advance[]
+
+  @@index([mobile])
+  @@index([staffId])
+  @@index([status])
+  @@map("staff")
+}
+
+model Attendance {
+  id          String             @id @default(cuid())
+  staffId     String
+  staff       Staff              @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  date        DateTime           @db.Date
+  inTime      DateTime?
+  outTime     DateTime?
+  status      AttendanceStatus   @default(PRESENT)
+  method      AttendanceMethod   @default(QR)
+  latitude    Float?
+  longitude   Float?
+  remark      String?            @db.Text
+
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@unique([staffId, date])       // Ek din me ek hi attendance
+  @@index([date])
+  @@index([staffId])
+  @@index([status])
+  @@map("attendance")
+}
+
+model Salary {
+  id           String       @id @default(cuid())
+  staffId      String
+  staff        Staff        @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  month        Int                          // 1-12
+  year         Int                          // 2026
+  baseSalary   Float
+  presentDays  Int          @default(0)
+  absentDays   Int          @default(0)
+  advanceCut   Float        @default(0)
+  deduction    Float        @default(0)
+  bonus        Float        @default(0)
+  finalSalary  Float
+  paymentDate  DateTime?
+  paymentMode  PaymentMode?
+  isManual     Boolean      @default(false) // manual override flag
+  remark       String?      @db.Text
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@unique([staffId, month, year])  // Ek staff ki ek month me ek hi salary
+  @@index([staffId])
+  @@index([year, month])
+  @@map("salary")
+}
+
+model Advance {
+  id               String         @id @default(cuid())
+  staffId          String
+  staff            Staff          @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  amountGiven      Float
+  amountRecovered  Float          @default(0)
+  remainingBalance Float
+  reason           String?        @db.Text
+  date             DateTime       @default(now())
+  status           AdvanceStatus  @default(OPEN)
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([staffId])
+  @@index([status])
+  @@map("advances")
+}
+
+model AttendanceQR {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  isActive    Boolean   @default(true)
+  expiresAt   DateTime
+  expiresIn   Int                        // Kitne din ke liye banaya (record)
+  createdBy   String?                    // Admin ID
+  createdAt   DateTime  @default(now())
+
+  @@index([token])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@map("attendance_qr")
 }
