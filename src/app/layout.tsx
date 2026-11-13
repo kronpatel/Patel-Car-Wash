@@ -6,6 +6,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import SplashScreen from "@/components/ui/SplashScreen";
 import WhatsAppFloatingBtn from "@/components/ui/WhatsAppFloatingBtn";
+import { Toaster } from "sonner";
 import { SHOP_CONFIG } from "@/lib/constants";
 
 const inter = Inter({
@@ -96,6 +97,7 @@ export default function RootLayout({
         className={`${inter.variable} ${poppins.variable} font-sans bg-charcoal-900 text-gray-100 antialiased w-full min-h-screen overflow-x-hidden flex flex-col justify-between selection:bg-neon-blue/30 selection:text-neon-blue`}
       >
         <AuthProvider>
+          <Toaster richColors position="top-right" theme="dark" />
           {/* Animated Splash Screen with bubble/foam simulation (sessionStorage guarded) */}
           <SplashScreen />
 

@@ -16,6 +16,7 @@ import {
   ShieldAlert,
   Calendar,
   ChevronDown,
+  Users,
 } from "lucide-react";
 import CoinBadge from "@/components/ui/CoinBadge";
 import { cn } from "@/lib/utils";
@@ -67,6 +68,8 @@ export default function Header() {
 
   const userRole = session?.user?.role;
   const userCoins = session?.user?.cleanCoins ?? 0;
+  const isEmployeesActive = pathname?.startsWith("/admin/employees");
+  const isAdminActive = pathname === "/admin" || pathname?.startsWith("/admin/promos");
 
   return (
     <header
@@ -175,13 +178,32 @@ export default function Header() {
                         </Link>
 
                         {userRole === "admin" && (
-                          <Link
-                            href="/admin"
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gold hover:text-gold-light hover:bg-gold/10 transition-colors"
-                          >
-                            <ShieldAlert className="w-4 h-4 text-gold" />
-                            <span>Owner Admin Panel</span>
-                          </Link>
+                          <>
+                            <Link
+                              href="/admin"
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
+                                isAdminActive
+                                  ? "text-gold bg-gold/15 font-semibold"
+                                  : "text-gold hover:text-gold-light hover:bg-gold/10"
+                              )}
+                            >
+                              <ShieldAlert className="w-4 h-4 text-gold" />
+                              <span>Owner Admin Panel</span>
+                            </Link>
+                            <Link
+                              href="/admin/employees"
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
+                                isEmployeesActive
+                                  ? "text-neon-blue bg-neon-blue/15 font-semibold"
+                                  : "text-gray-300 hover:text-white hover:bg-white/5"
+                              )}
+                            >
+                              <Users className="w-4 h-4 text-neon-blue" />
+                              <span>Employees Hub</span>
+                            </Link>
+                          </>
                         )}
 
                         <button
@@ -293,12 +315,30 @@ export default function Header() {
                     </Link>
 
                     {userRole === "admin" && (
-                      <Link
-                        href="/admin"
-                        className="px-4 py-2.5 rounded-xl text-base font-medium text-gold hover:bg-gold/10"
-                      >
-                        Owner Admin Panel
-                      </Link>
+                      <>
+                        <Link
+                          href="/admin"
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
+                            isAdminActive
+                              ? "text-gold bg-gold/15 font-semibold"
+                              : "text-gold hover:bg-gold/10"
+                          )}
+                        >
+                          Owner Admin Panel
+                        </Link>
+                        <Link
+                          href="/admin/employees"
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
+                            isEmployeesActive
+                              ? "text-neon-blue bg-neon-blue/15 font-semibold"
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          Employees Hub
+                        </Link>
+                      </>
                     )}
                   </>
                 )}
