@@ -1,20 +1,19 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import {
-  getAllPromoCodes,
-  createPromoCode,
-  findPromoCodeByCode,
-  countPromoUsageTotal,
-  getPromoCodeStatus,
-} from "@/lib/jsonDb";
-import { DiscountType } from "@/types";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+function getPromoCodeStatus(promo: { isActive: boolean; expiryDate: Date }): "active" | "expired" | "inactive" {
+  if (!promo.isActive) return "inactive";
+  if (promo.expiryDate && new Date(promo.expiryDate) < new Date()) return "expired";
+  return "active";
+}
+
 /**
  * GET /api/admin/promos
- * Lists all promo codes enriched with usage count and computed status.
+ * Lists all promo codes from MySQL enriched with usage count and computed status.
  * Admin-only.
  */
 export async function GET() {
@@ -27,9 +26,18 @@ export async function GET() {
       );
     }
 
-    const promos = getAllPromoCodes().map((p) => ({
+    const rawPromos = await prisma.promoCode.findMany({
+      include: {
+        _count: {
+          select: { usages: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const promos = rawPromos.map((p) => ({
       ...p,
-      usedCount: countPromoUsageTotal(p.id),
+      usedCount: p._count.usages,
       computedStatus: getPromoCodeStatus(p),
     }));
 
@@ -49,8 +57,7 @@ export async function GET() {
 
 /**
  * POST /api/admin/promos
- * Creates a new promo code.
- * Validates unique code, discount type/value, expiry, usageLimitPerUser.
+ * Creates a new promo code in MySQL via Prisma.
  * Admin-only.
  */
 export async function POST(req: Request) {
@@ -86,7 +93,10 @@ export async function POST(req: Request) {
     const normalizedCode = code.trim().toUpperCase();
 
     // Check uniqueness
-    const existing = findPromoCodeByCode(normalizedCode);
+    const existing = await prisma.promoCode.findUnique({
+      where: { code: normalizedCode },
+    });
+
     if (existing) {
       return NextResponse.json(
         { success: false, error: `Promo code "${normalizedCode}" already exists` },
@@ -126,29 +136,28 @@ export async function POST(req: Request) {
     const numUsageLimit = Number(usageLimitPerUser);
     if (isNaN(numUsageLimit) || numUsageLimit < 1) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Usage limit per user must be at least 1",
-        },
+        { success: false, error: "Usage limit per user must be at least 1" },
         { status: 400 }
       );
     }
 
-    const created = createPromoCode({
-      code: normalizedCode,
-      discountType: discountType as DiscountType,
-      discountValue: numDiscount,
-      minBookingAmount:
-        minBookingAmount !== undefined && minBookingAmount !== null && minBookingAmount !== ""
-          ? Number(minBookingAmount)
-          : null,
-      expiryDate: new Date(expiryDate).toISOString(),
-      isActive: Boolean(isActive),
-      usageLimitPerUser: Math.floor(numUsageLimit),
-      totalUsageLimit:
-        totalUsageLimit !== undefined && totalUsageLimit !== null && totalUsageLimit !== ""
-          ? Math.floor(Number(totalUsageLimit))
-          : null,
+    const created = await prisma.promoCode.create({
+      data: {
+        code: normalizedCode,
+        discountType: discountType as "FLAT" | "PERCENTAGE",
+        discountValue: numDiscount,
+        minBookingAmount:
+          minBookingAmount !== undefined && minBookingAmount !== null && minBookingAmount !== ""
+            ? Number(minBookingAmount)
+            : null,
+        expiryDate: new Date(expiryDate),
+        isActive: Boolean(isActive),
+        usageLimitPerUser: Math.floor(numUsageLimit),
+        totalUsageLimit:
+          totalUsageLimit !== undefined && totalUsageLimit !== null && totalUsageLimit !== ""
+            ? Math.floor(Number(totalUsageLimit))
+            : null,
+      },
     });
 
     return NextResponse.json(

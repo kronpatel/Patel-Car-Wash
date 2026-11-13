@@ -1,21 +1,15 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import {
-  findPromoCodeByCode,
-  computePromoDiscount,
-  countPromoUsageByUser,
-  countPromoUsageTotal,
-} from "@/lib/jsonDb";
+import { prisma } from "@/lib/prisma";
 
 /**
  * POST /api/coupons/validate
  * Validates a promo code against an order amount and the logged-in user's
- * redemption history. Enforces per-user and total usage limits.
+ * redemption history in MySQL. Enforces per-user and total usage limits.
  */
 export async function POST(req: Request) {
   try {
-    // Promo usage is tracked per user, so a session is required to enforce limits.
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json(
@@ -33,7 +27,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const promo = findPromoCodeByCode(code);
+    const promo = await prisma.promoCode.findUnique({
+      where: { code: code.trim().toUpperCase() },
+    });
 
     if (!promo || !promo.isActive) {
       return NextResponse.json(
@@ -64,7 +60,10 @@ export async function POST(req: Request) {
     }
 
     // ── THE FIX: per-user usage limit ──
-    const usedByThisUser = countPromoUsageByUser(promo.id, session.user.id);
+    const usedByThisUser = await prisma.promoCodeUsage.count({
+      where: { promoCodeId: promo.id, userId: session.user.id },
+    });
+
     if (usedByThisUser >= promo.usageLimitPerUser) {
       return NextResponse.json(
         {
@@ -79,7 +78,9 @@ export async function POST(req: Request) {
 
     // ── Total usage limit across all users (optional) ──
     if (promo.totalUsageLimit) {
-      const usedTotal = countPromoUsageTotal(promo.id);
+      const usedTotal = await prisma.promoCodeUsage.count({
+        where: { promoCodeId: promo.id },
+      });
       if (usedTotal >= promo.totalUsageLimit) {
         return NextResponse.json(
           {
@@ -93,22 +94,21 @@ export async function POST(req: Request) {
     }
 
     // Calculate discount
-    const result = computePromoDiscount(promo, amount);
-    if (!result) {
-      return NextResponse.json(
-        { success: false, error: "Promo code could not be applied to this order" },
-        { status: 400 }
-      );
+    let discount = 0;
+    if (promo.discountType === "FLAT") {
+      discount = promo.discountValue;
+    } else {
+      discount = Math.round((amount * promo.discountValue) / 100);
     }
 
-    const discountedTotal = Math.max(amount - result.discount, 99);
+    const discountedTotal = Math.max(amount - discount, 99);
 
     return NextResponse.json({
       success: true,
       code: promo.code,
-      discount: result.discount,
+      discount,
       discountedTotal,
-      message: `Promo applied! ₹${result.discount} off.`,
+      message: `Promo applied! ₹${discount} off.`,
     });
   } catch (error) {
     console.error("POST /api/coupons/validate error:", error);

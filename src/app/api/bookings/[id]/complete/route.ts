@@ -1,13 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import {
-  findBookingById,
-  updateBooking,
-  findUserById,
-  updateUser,
-  createCoinTransaction,
-} from "@/lib/jsonDb";
+import { prisma } from "@/lib/prisma";
 import { sendVehicleReadyWhatsApp } from "@/lib/whatsapp";
 import { calculateEarnedCoins } from "@/lib/utils";
 
@@ -15,7 +9,7 @@ import { calculateEarnedCoins } from "@/lib/utils";
  * PATCH /api/bookings/[id]/complete
  * OWNER / ADMIN PROTECTED ENDPOINT
  *
- * Implements the two-step completion lifecycle:
+ * Implements the two-step completion lifecycle in MySQL:
  * Step 1 (action = "ready"):
  *   - Marks vehicle "ready"
  *   - Auto-triggers WhatsApp #2: "🎉 Your vehicle is ready! Pay at counter 🚗"
@@ -42,7 +36,11 @@ export async function PATCH(
     const body = await req.json();
     const action = body.action || "ready"; // "ready" | "completed"
 
-    const booking = findBookingById(params.id);
+    const booking = await prisma.booking.findFirst({
+      where: {
+        OR: [{ id: params.id }, { bookingId: params.id }],
+      },
+    });
 
     if (!booking) {
       return NextResponse.json(
@@ -65,7 +63,7 @@ export async function PATCH(
     // STEP 1: MARK VEHICLE READY -> TRIGGER WHATSAPP #2
     // ─────────────────────────────────────────────────────────
     if (action === "ready") {
-      let waReadySent = booking.whatsappSent?.ready || false;
+      let waReadySent = booking.whatsappReady || false;
 
       // Trigger WhatsApp #2 notification
       try {
@@ -85,11 +83,11 @@ export async function PATCH(
         console.warn("WhatsApp Ready alert error (non-fatal):", waError);
       }
 
-      const updated = updateBooking(booking.id, {
-        status: "ready",
-        whatsappSent: {
-          ...booking.whatsappSent,
-          ready: waReadySent,
+      const updated = await prisma.booking.update({
+        where: { id: booking.id },
+        data: {
+          status: "ready",
+          whatsappReady: waReadySent,
         },
       });
 
@@ -112,36 +110,40 @@ export async function PATCH(
         });
       }
 
-      const updated = updateBooking(booking.id, { status: "completed" });
-
       // Calculate Clean Coins earned: ₹100 spent = 10 coins
       const earnedCoins = calculateEarnedCoins(booking.finalPrice);
 
-      let creditedCoins = 0;
-      if (earnedCoins > 0) {
-        const bookingUserId = typeof booking.userId === "string" ? booking.userId : (booking.userId as any)?.id;
-        const customer = findUserById(bookingUserId);
-        if (customer) {
-          const newCoinTotal = (customer.cleanCoins || 0) + earnedCoins;
-          updateUser(customer.id || customer._id, { cleanCoins: newCoinTotal });
-          creditedCoins = earnedCoins;
+      const result = await prisma.$transaction(async (tx) => {
+        const completedBooking = await tx.booking.update({
+          where: { id: booking.id },
+          data: { status: "completed" },
+        });
 
-          // Log transaction
-          createCoinTransaction({
-            userId: customer.id || customer._id,
-            type: "earned",
-            amount: earnedCoins,
-            reason: `Earned from completed wash ${booking.bookingId}`,
-            bookingId: booking.id || booking._id,
+        if (earnedCoins > 0 && booking.userId) {
+          await tx.user.update({
+            where: { id: booking.userId },
+            data: { cleanCoins: { increment: earnedCoins } },
+          });
+
+          await tx.coinTransaction.create({
+            data: {
+              userId: booking.userId,
+              type: "earned",
+              amount: earnedCoins,
+              reason: `Earned from completed wash ${booking.bookingId}`,
+              bookingId: booking.id,
+            },
           });
         }
-      }
+
+        return completedBooking;
+      });
 
       return NextResponse.json({
         success: true,
-        message: `Booking completed. ${creditedCoins} Clean Coins credited to customer.`,
-        booking: updated,
-        earnedCoins: creditedCoins,
+        message: `Booking completed. ${earnedCoins} Clean Coins credited to customer.`,
+        booking: result,
+        earnedCoins,
       });
     }
 

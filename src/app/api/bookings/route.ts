@@ -2,21 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import QRCode from "qrcode";
 import { authOptions } from "@/lib/auth";
-import {
-  getBookings,
-  countBookingsInSlot,
-  findUserById,
-  updateUser,
-  createBooking,
-  deleteBooking,
-  findPromoCodeByCode,
-  computePromoDiscount,
-  countPromoUsageByUser,
-  countPromoUsageTotal,
-  recordPromoUsage,
-  createCoinTransaction,
-  updateBooking,
-} from "@/lib/jsonDb";
+import { prisma } from "@/lib/prisma";
 import { calculatePlanPrice, calculateCoinsDiscount } from "@/lib/utils";
 import { LOYALTY_RULES, VEHICLE_TYPES, TIME_SLOTS } from "@/lib/constants";
 import { sendBookingConfirmationWhatsApp } from "@/lib/whatsapp";
@@ -43,17 +29,20 @@ export async function GET(req: Request) {
     const status = searchParams.get("status") || undefined;
     const date = searchParams.get("date") || undefined;
 
-    const filter: { userId?: string; status?: string; date?: string } = {};
+    const where: any = {};
 
     if (session.user.role === "admin") {
-      if (status) filter.status = status;
-      if (date) filter.date = date;
+      if (status) where.status = status;
+      if (date) where.date = date;
     } else {
       // Customers only access their own bookings
-      filter.userId = session.user.id;
+      where.userId = session.user.id;
     }
 
-    const bookings = getBookings(filter);
+    const bookings = await prisma.booking.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
 
     return NextResponse.json({
       success: true,
@@ -71,10 +60,10 @@ export async function GET(req: Request) {
 
 /**
  * POST /api/bookings
- * - Creates a new booking in local JSON DB
+ * - Creates a new booking in MySQL via Prisma
  * - Requires customer authentication
  * - Calculates flat pricing for basic wash or tiered pricing for detailing
- * - Handles Clean Coins redemption & coupon discounts
+ * - Handles Clean Coins redemption & promo code discounts
  * - Generates QR Code
  * - Dispatches WhatsApp Booking Confirmation #1
  */
@@ -139,8 +128,14 @@ export async function POST(req: Request) {
       );
     }
 
-    // 0. Bay Capacity Check (Max 4 wash bays per date + time slot)
-    const activeInSlot = countBookingsInSlot(date, timeSlot);
+    // 0. Bay Capacity Check in MySQL (Max 4 wash bays per date + time slot)
+    const activeInSlot = await prisma.booking.count({
+      where: {
+        date,
+        timeSlot,
+        status: { in: ["confirmed", "in_progress", "ready"] },
+      },
+    });
 
     if (activeInSlot >= 4) {
       return NextResponse.json(
@@ -153,7 +148,10 @@ export async function POST(req: Request) {
     }
 
     // Fetch user details for phone & coin balance
-    const user = findUserById(session.user.id);
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
+
     if (!user) {
       return NextResponse.json(
         { success: false, error: "User account not found" },
@@ -189,7 +187,9 @@ export async function POST(req: Request) {
     // 3. Handle Promo Code Validation (with per-user & total usage limits)
     let appliedPromo: { id: string; code: string } | null = null;
     if (couponCode && typeof couponCode === "string") {
-      const promo = findPromoCodeByCode(couponCode);
+      const promo = await prisma.promoCode.findUnique({
+        where: { code: couponCode.trim().toUpperCase() },
+      });
 
       if (promo && promo.isActive) {
         // Expiry & min-order checks
@@ -213,9 +213,11 @@ export async function POST(req: Request) {
           );
         }
 
-        // ── THE FIX: per-user usage limit (enforced server-side on booking too,
-        // since this route validates independently of /api/coupons/validate) ──
-        const usedByThisUser = countPromoUsageByUser(promo.id, user.id || user._id);
+        // Enforce Per-User Usage Limit
+        const usedByThisUser = await prisma.promoCodeUsage.count({
+          where: { promoCodeId: promo.id, userId: user.id },
+        });
+
         if (usedByThisUser >= promo.usageLimitPerUser) {
           return NextResponse.json(
             {
@@ -228,40 +230,47 @@ export async function POST(req: Request) {
           );
         }
 
-        // ── Total usage limit across all users (optional) ──
+        // Enforce Total Usage Limit
         if (promo.totalUsageLimit) {
-          const usedTotal = countPromoUsageTotal(promo.id);
+          const usedTotal = await prisma.promoCodeUsage.count({
+            where: { promoCodeId: promo.id },
+          });
           if (usedTotal >= promo.totalUsageLimit) {
             return NextResponse.json(
               {
                 success: false,
-                error:
-                  "This promo code has reached its total usage limit and is no longer available.",
+                error: "This promo code has reached its total usage limit.",
               },
               { status: 409 }
             );
           }
         }
 
-        // Compute discount via the shared helper
-        const result = computePromoDiscount(promo, basePrice);
-        if (result) {
-          discount += result.discount;
-          appliedPromo = { id: promo.id, code: promo.code };
+        // Calculate discount
+        if (promo.discountType === "FLAT") {
+          discount += promo.discountValue;
+        } else {
+          discount += Math.round((basePrice * promo.discountValue) / 100);
         }
+        appliedPromo = { id: promo.id, code: promo.code };
       }
     }
 
     const finalPrice = Math.max(basePrice - discount, 99);
 
-    // 4. Generate QR Code Data URL placeholder
+    // 4. Generate Unique Sequential Booking ID: CW-YYYY-XXXX
+    const currentYear = new Date().getFullYear();
+    const countThisYear = await prisma.booking.count({
+      where: { bookingId: { startsWith: `CW-${currentYear}-` } },
+    });
+    const bookingId = `CW-${currentYear}-${String(countThisYear + 1).padStart(4, "0")}`;
+
+    // 5. Generate QR Code Data URL
     const qrPayload = JSON.stringify({
       customer: user.name,
       vehicle: `${vehicleType} (${vehicleNumber.toUpperCase()})`,
-      plan,
-      date,
-      timeSlot,
-      amountDue: finalPrice,
+      bookingId,
+      finalPrice,
     });
     const qrCode = await QRCode.toDataURL(qrPayload, {
       margin: 2,
@@ -272,68 +281,67 @@ export async function POST(req: Request) {
       },
     });
 
-    // 5. Create Booking in JSON DB
-    const booking = createBooking({
-      userId: user.id || user._id,
-      customerName: user.name,
-      customerPhone: user.phone,
-      customerEmail: user.email,
-      service,
-      plan,
-      vehicleType,
-      vehicleNumber: vehicleNumber.toUpperCase().trim(),
-      date,
-      timeSlot,
-      address: address?.trim() || "",
-      notes: notes?.trim() || "",
-      basePrice,
-      coinsUsed,
-      discount,
-      finalPrice,
-      status: "confirmed",
-      qrCode,
-    });
+    // 6. Atomic Execution via Prisma Transaction
+    const booking = await prisma.$transaction(async (tx) => {
+      // Create Booking in MySQL
+      const createdBooking = await tx.booking.create({
+        data: {
+          bookingId,
+          userId: user.id,
+          customerName: user.name,
+          customerPhone: user.phone,
+          customerEmail: user.email,
+          service,
+          plan,
+          vehicleType,
+          vehicleNumber: vehicleNumber.toUpperCase().trim(),
+          date,
+          timeSlot,
+          address: address?.trim() || null,
+          notes: notes?.trim() || null,
+          basePrice,
+          coinsUsed,
+          discount,
+          finalPrice,
+          status: "confirmed",
+          qrCode,
+        },
+      });
 
-    // 6. Deduct Clean Coins if used
-    if (coinsUsed > 0) {
-      const freshUser = findUserById(user.id || user._id);
-      if (!freshUser || freshUser.cleanCoins < coinsUsed) {
-        deleteBooking(booking.id);
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Insufficient Clean Coins balance. Please refresh and try again.",
+      // Deduct Clean Coins if used
+      if (coinsUsed > 0) {
+        await tx.user.update({
+          where: { id: user.id },
+          data: { cleanCoins: { decrement: coinsUsed } },
+        });
+
+        await tx.coinTransaction.create({
+          data: {
+            userId: user.id,
+            type: "redeemed",
+            amount: coinsUsed,
+            reason: `Discount of ₹${calculateCoinsDiscount(coinsUsed)} on booking ${createdBooking.bookingId}`,
+            bookingId: createdBooking.id,
           },
-          { status: 400 }
-        );
+        });
       }
 
-      updateUser(freshUser.id || freshUser._id, {
-        cleanCoins: Math.max(0, freshUser.cleanCoins - coinsUsed),
-      });
+      // Record promo code usage if applied
+      if (appliedPromo) {
+        await tx.promoCodeUsage.create({
+          data: {
+            promoCodeId: appliedPromo.id,
+            promoCode: appliedPromo.code,
+            userId: user.id,
+            userName: user.name,
+            bookingId: createdBooking.id,
+            bookingRef: createdBooking.bookingId,
+          },
+        });
+      }
 
-      createCoinTransaction({
-        userId: freshUser.id || freshUser._id,
-        type: "redeemed",
-        amount: coinsUsed,
-        reason: `Discount of ₹${calculateCoinsDiscount(coinsUsed)} on booking ${booking.bookingId}`,
-        bookingId: booking.id || booking._id,
-      });
-    }
-
-    // 6.5 Record promo code usage (one entry per redemption) for limit enforcement & history.
-    // Done after the coins rollback window so a rolled-back booking doesn't burn a
-    // user's one-time promo. Persisted via the jsonDb layer (writeFileSync).
-    if (appliedPromo) {
-      recordPromoUsage({
-        promoCodeId: appliedPromo.id,
-        promoCode: appliedPromo.code,
-        userId: user.id || user._id,
-        userName: user.name,
-        bookingId: booking.id,
-        bookingRef: booking.bookingId,
-      });
-    }
+      return createdBooking;
+    });
 
     // 7. Auto-Trigger WhatsApp Confirmation #1
     try {
@@ -350,11 +358,9 @@ export async function POST(req: Request) {
       });
 
       if (waResult.success) {
-        updateBooking(booking.id, {
-          whatsappSent: {
-            ...booking.whatsappSent,
-            bookingConfirmed: true,
-          },
+        await prisma.booking.update({
+          where: { id: booking.id },
+          data: { whatsappConfirmed: true },
         });
       }
     } catch (waError) {

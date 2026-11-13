@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { findUserById, getCoinTransactionsByUserId } from "@/lib/jsonDb";
+import { prisma } from "@/lib/prisma";
 import { LOYALTY_RULES } from "@/lib/constants";
 import { calculateCoinsDiscount } from "@/lib/utils";
 
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * GET /api/coins
- * Fetches user's loyalty balance, rupee worth, referral code, and transaction log from JSON DB.
+ * Fetches user's loyalty balance, rupee worth, referral code, and transaction log from MySQL.
  */
 export async function GET() {
   try {
@@ -21,7 +21,9 @@ export async function GET() {
       );
     }
 
-    const user = findUserById(session.user.id);
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
 
     if (!user) {
       return NextResponse.json(
@@ -30,7 +32,12 @@ export async function GET() {
       );
     }
 
-    const transactions = getCoinTransactionsByUserId(user.id || user._id, 50);
+    const transactions = await prisma.coinTransaction.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+
     const rupeeWorth = calculateCoinsDiscount(user.cleanCoins);
 
     return NextResponse.json({

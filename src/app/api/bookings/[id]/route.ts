@@ -1,13 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import {
-  findBookingById,
-  updateBooking,
-  findUserById,
-  updateUser,
-  createCoinTransaction,
-} from "@/lib/jsonDb";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
   req: Request,
@@ -22,7 +16,11 @@ export async function GET(
       );
     }
 
-    const booking = findBookingById(params.id);
+    const booking = await prisma.booking.findFirst({
+      where: {
+        OR: [{ id: params.id }, { bookingId: params.id }],
+      },
+    });
 
     if (!booking) {
       return NextResponse.json(
@@ -32,10 +30,9 @@ export async function GET(
     }
 
     // Authorization check
-    const bookingUserId = typeof booking.userId === "string" ? booking.userId : (booking.userId as any)?.id;
     if (
       session.user.role !== "admin" &&
-      bookingUserId !== session.user.id
+      booking.userId !== session.user.id
     ) {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
@@ -66,7 +63,11 @@ export async function PATCH(
       );
     }
 
-    const booking = findBookingById(params.id);
+    const booking = await prisma.booking.findFirst({
+      where: {
+        OR: [{ id: params.id }, { bookingId: params.id }],
+      },
+    });
 
     if (!booking) {
       return NextResponse.json(
@@ -75,7 +76,6 @@ export async function PATCH(
       );
     }
 
-    const bookingUserId = typeof booking.userId === "string" ? booking.userId : (booking.userId as any)?.id;
     const { status, notes } = await req.json();
 
     // ─────────────────────────────────────────────────────────
@@ -85,7 +85,7 @@ export async function PATCH(
       // Non-admins can only cancel their own bookings
       if (
         session.user.role !== "admin" &&
-        bookingUserId !== session.user.id
+        booking.userId !== session.user.id
       ) {
         return NextResponse.json(
           { success: false, error: "Forbidden" },
@@ -111,26 +111,32 @@ export async function PATCH(
         );
       }
 
-      // Mark cancelled
-      const cancelledBooking = updateBooking(booking.id, { status: "cancelled" });
+      // Execute cancellation and coin refund atomically
+      const updatedBooking = await prisma.$transaction(async (tx) => {
+        const cancelled = await tx.booking.update({
+          where: { id: booking.id },
+          data: { status: "cancelled" },
+        });
 
-      // Refund Clean Coins if customer redeemed any for this booking
-      if (booking.coinsUsed > 0 && bookingUserId) {
-        const customer = findUserById(bookingUserId);
-        if (customer) {
-          updateUser(customer.id || customer._id, {
-            cleanCoins: (customer.cleanCoins || 0) + booking.coinsUsed,
+        if (booking.coinsUsed > 0 && booking.userId) {
+          await tx.user.update({
+            where: { id: booking.userId },
+            data: { cleanCoins: { increment: booking.coinsUsed } },
           });
 
-          createCoinTransaction({
-            userId: customer.id || customer._id,
-            type: "earned",
-            amount: booking.coinsUsed,
-            reason: `Refund of ${booking.coinsUsed} Clean Coins for cancelled booking ${booking.bookingId}`,
-            bookingId: booking.id || booking._id,
+          await tx.coinTransaction.create({
+            data: {
+              userId: booking.userId,
+              type: "earned",
+              amount: booking.coinsUsed,
+              reason: `Refund of ${booking.coinsUsed} Clean Coins for cancelled booking ${booking.bookingId}`,
+              bookingId: booking.id,
+            },
           });
         }
-      }
+
+        return cancelled;
+      });
 
       return NextResponse.json({
         success: true,
@@ -138,11 +144,11 @@ export async function PATCH(
           booking.coinsUsed > 0
             ? `Booking cancelled. ${booking.coinsUsed} Clean Coins have been refunded to your account.`
             : "Booking cancelled successfully",
-        booking: cancelledBooking,
+        booking: updatedBooking,
       });
     }
 
-    // Block direct "completed" updates to ensure loyalty points and WhatsApp triggers run via /complete
+    // Block direct "completed" updates
     if (status === "completed") {
       return NextResponse.json(
         {
@@ -153,18 +159,19 @@ export async function PATCH(
       );
     }
 
-    const updates: Record<string, any> = {};
-
-    // Admin status updates
+    const data: any = {};
     if (session.user.role === "admin" && status) {
-      updates.status = status;
+      data.status = status;
     }
-
     if (notes !== undefined) {
-      updates.notes = notes;
+      data.notes = notes;
     }
 
-    const updatedBooking = updateBooking(booking.id, updates);
+    const updatedBooking = await prisma.booking.update({
+      where: { id: booking.id },
+      data,
+    });
+
     return NextResponse.json({ success: true, booking: updatedBooking });
   } catch (error) {
     console.error("PATCH /api/bookings/[id] error:", error);

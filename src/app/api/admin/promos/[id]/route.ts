@@ -1,15 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import {
-  findPromoCodeById,
-  findPromoCodeByCode,
-  updatePromoCode,
-  deletePromoCode,
-  countPromoUsageTotal,
-  getPromoCodeStatus,
-} from "@/lib/jsonDb";
-import { DiscountType } from "@/types";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -19,10 +11,15 @@ interface RouteParams {
   };
 }
 
+function getPromoCodeStatus(promo: { isActive: boolean; expiryDate: Date }): "active" | "expired" | "inactive" {
+  if (!promo.isActive) return "inactive";
+  if (promo.expiryDate && new Date(promo.expiryDate) < new Date()) return "expired";
+  return "active";
+}
+
 /**
  * PATCH /api/admin/promos/[id]
- * Updates an existing promo code.
- * Allows updating code, discount, limits, expiry, and active status.
+ * Updates an existing promo code in MySQL.
  */
 export async function PATCH(req: Request, { params }: RouteParams) {
   try {
@@ -35,7 +32,10 @@ export async function PATCH(req: Request, { params }: RouteParams) {
     }
 
     const { id } = params;
-    const existing = findPromoCodeById(id);
+    const existing = await prisma.promoCode.findUnique({
+      where: { id },
+    });
+
     if (!existing) {
       return NextResponse.json(
         { success: false, error: "Promo code not found" },
@@ -44,7 +44,7 @@ export async function PATCH(req: Request, { params }: RouteParams) {
     }
 
     const body = await req.json();
-    const updates: Record<string, unknown> = {};
+    const data: any = {};
 
     if (body.code !== undefined) {
       const normalized = String(body.code).trim().toUpperCase();
@@ -54,15 +54,16 @@ export async function PATCH(req: Request, { params }: RouteParams) {
           { status: 400 }
         );
       }
-      // Check if new code conflicts with another promo
-      const collision = findPromoCodeByCode(normalized);
+      const collision = await prisma.promoCode.findUnique({
+        where: { code: normalized },
+      });
       if (collision && collision.id !== id) {
         return NextResponse.json(
           { success: false, error: `Promo code "${normalized}" is already in use` },
           { status: 409 }
         );
       }
-      updates.code = normalized;
+      data.code = normalized;
     }
 
     if (body.discountType !== undefined) {
@@ -72,7 +73,7 @@ export async function PATCH(req: Request, { params }: RouteParams) {
           { status: 400 }
         );
       }
-      updates.discountType = body.discountType as DiscountType;
+      data.discountType = body.discountType;
     }
 
     if (body.discountValue !== undefined) {
@@ -83,11 +84,11 @@ export async function PATCH(req: Request, { params }: RouteParams) {
           { status: 400 }
         );
       }
-      updates.discountValue = val;
+      data.discountValue = val;
     }
 
     if (body.minBookingAmount !== undefined) {
-      updates.minBookingAmount =
+      data.minBookingAmount =
         body.minBookingAmount === null || body.minBookingAmount === ""
           ? null
           : Number(body.minBookingAmount);
@@ -100,11 +101,11 @@ export async function PATCH(req: Request, { params }: RouteParams) {
           { status: 400 }
         );
       }
-      updates.expiryDate = new Date(body.expiryDate).toISOString();
+      data.expiryDate = new Date(body.expiryDate);
     }
 
     if (body.isActive !== undefined) {
-      updates.isActive = Boolean(body.isActive);
+      data.isActive = Boolean(body.isActive);
     }
 
     if (body.usageLimitPerUser !== undefined) {
@@ -115,30 +116,30 @@ export async function PATCH(req: Request, { params }: RouteParams) {
           { status: 400 }
         );
       }
-      updates.usageLimitPerUser = Math.floor(limit);
+      data.usageLimitPerUser = Math.floor(limit);
     }
 
     if (body.totalUsageLimit !== undefined) {
-      updates.totalUsageLimit =
+      data.totalUsageLimit =
         body.totalUsageLimit === null || body.totalUsageLimit === ""
           ? null
           : Math.floor(Number(body.totalUsageLimit));
     }
 
-    const updated = updatePromoCode(id, updates);
-    if (!updated) {
-      return NextResponse.json(
-        { success: false, error: "Failed to update promo code" },
-        { status: 500 }
-      );
-    }
+    const updated = await prisma.promoCode.update({
+      where: { id },
+      data,
+      include: {
+        _count: { select: { usages: true } },
+      },
+    });
 
     return NextResponse.json({
       success: true,
       message: `Promo code "${updated.code}" updated`,
       promo: {
         ...updated,
-        usedCount: countPromoUsageTotal(updated.id),
+        usedCount: updated._count.usages,
         computedStatus: getPromoCodeStatus(updated),
       },
     });
@@ -153,7 +154,7 @@ export async function PATCH(req: Request, { params }: RouteParams) {
 
 /**
  * DELETE /api/admin/promos/[id]
- * Deletes a promo code. Keeps usage history intact for records.
+ * Deletes a promo code from MySQL.
  */
 export async function DELETE(_req: Request, { params }: RouteParams) {
   try {
@@ -166,7 +167,10 @@ export async function DELETE(_req: Request, { params }: RouteParams) {
     }
 
     const { id } = params;
-    const existing = findPromoCodeById(id);
+    const existing = await prisma.promoCode.findUnique({
+      where: { id },
+    });
+
     if (!existing) {
       return NextResponse.json(
         { success: false, error: "Promo code not found" },
@@ -174,13 +178,9 @@ export async function DELETE(_req: Request, { params }: RouteParams) {
       );
     }
 
-    const deleted = deletePromoCode(id);
-    if (!deleted) {
-      return NextResponse.json(
-        { success: false, error: "Failed to delete promo code" },
-        { status: 500 }
-      );
-    }
+    await prisma.promoCode.delete({
+      where: { id },
+    });
 
     return NextResponse.json({
       success: true,

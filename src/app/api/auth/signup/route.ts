@@ -1,19 +1,13 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import {
-  findUserByEmail,
-  findUserByPhone,
-  findUserByReferralCode,
-  createUser,
-  updateUser,
-  createCoinTransaction,
-} from "@/lib/jsonDb";
+import { prisma } from "@/lib/prisma";
 import { generateReferralCode } from "@/lib/utils";
 import { LOYALTY_RULES } from "@/lib/constants";
 
 /**
  * POST /api/auth/signup
- * Registers a new customer with hashed credentials, referral tracking, and loyalty coins in local JSON DB.
+ * Registers a new customer in MySQL via Prisma with hashed credentials,
+ * referral tracking, and loyalty coins.
  */
 export async function POST(req: Request) {
   try {
@@ -36,10 +30,14 @@ export async function POST(req: Request) {
     const normalizedEmail = email.toLowerCase().trim();
     const normalizedPhone = phone.trim();
 
-    const existingByEmail = findUserByEmail(normalizedEmail);
-    const existingByPhone = findUserByPhone(normalizedPhone);
+    // Check if user already exists
+    const existing = await prisma.user.findFirst({
+      where: {
+        OR: [{ email: normalizedEmail }, { phone: normalizedPhone }],
+      },
+    });
 
-    if (existingByEmail || existingByPhone) {
+    if (existing) {
       return NextResponse.json(
         { success: false, error: "An account with this email or phone number already exists" },
         { status: 409 }
@@ -51,20 +49,26 @@ export async function POST(req: Request) {
 
     // Generate unique referral code for the new user
     let userReferralCode = generateReferralCode(name);
-    let codeExists = findUserByReferralCode(userReferralCode);
+    let codeExists = await prisma.user.findUnique({
+      where: { referralCode: userReferralCode },
+    });
     while (codeExists) {
       userReferralCode = generateReferralCode(name);
-      codeExists = findUserByReferralCode(userReferralCode);
+      codeExists = await prisma.user.findUnique({
+        where: { referralCode: userReferralCode },
+      });
     }
 
     let initialCoins = 0;
-    let referredByCode = null;
-    let referrerUser = null;
+    let referredByCode: string | null = null;
+    let referrerUser: { id: string; cleanCoins: number } | null = null;
 
     // Validate Referral Code if provided
     if (referralCode && typeof referralCode === "string") {
       const cleanRef = referralCode.trim().toUpperCase();
-      const referrer = findUserByReferralCode(cleanRef);
+      const referrer = await prisma.user.findUnique({
+        where: { referralCode: cleanRef },
+      });
 
       // Edge case: Block self-referral
       if (
@@ -84,48 +88,59 @@ export async function POST(req: Request) {
       }
     }
 
-    // 1. Create the new customer user FIRST to ensure registration succeeds before rewarding
-    const newUser = createUser({
-      name: name.trim(),
-      email: normalizedEmail,
-      password: hashedPassword,
-      phone: normalizedPhone,
-      role: "customer",
-      cleanCoins: initialCoins,
-      referralCode: userReferralCode,
-      referredBy: referredByCode,
+    // Atomic creation with transactions
+    const newUser = await prisma.$transaction(async (tx) => {
+      // 1. Create the new customer user
+      const created = await tx.user.create({
+        data: {
+          name: name.trim(),
+          email: normalizedEmail,
+          password: hashedPassword,
+          phone: normalizedPhone,
+          role: "customer",
+          cleanCoins: initialCoins,
+          referralCode: userReferralCode,
+          referredBy: referredByCode,
+        },
+      });
+
+      // 2. Reward referrer if applicable
+      if (referrerUser) {
+        await tx.user.update({
+          where: { id: referrerUser.id },
+          data: { cleanCoins: { increment: LOYALTY_RULES.REFERRAL_BONUS_COINS } },
+        });
+
+        await tx.coinTransaction.create({
+          data: {
+            userId: referrerUser.id,
+            type: "earned",
+            amount: LOYALTY_RULES.REFERRAL_BONUS_COINS,
+            reason: `Referral reward for inviting ${name}`,
+          },
+        });
+      }
+
+      // 3. Welcome bonus for new user
+      if (initialCoins > 0) {
+        await tx.coinTransaction.create({
+          data: {
+            userId: created.id,
+            type: "earned",
+            amount: initialCoins,
+            reason: `Welcome bonus for using referral code ${referredByCode}`,
+          },
+        });
+      }
+
+      return created;
     });
-
-    // 2. Only after user creation succeeds, reward referrer and log transactions
-    if (referrerUser) {
-      const updatedReferrerCoins = (referrerUser.cleanCoins || 0) + LOYALTY_RULES.REFERRAL_BONUS_COINS;
-      updateUser(referrerUser.id || referrerUser._id, {
-        cleanCoins: updatedReferrerCoins,
-      });
-
-      createCoinTransaction({
-        userId: referrerUser.id || referrerUser._id,
-        type: "earned",
-        amount: LOYALTY_RULES.REFERRAL_BONUS_COINS,
-        reason: `Referral reward for inviting ${name}`,
-      });
-    }
-
-    // If new user received welcome referral coins, log transaction
-    if (initialCoins > 0) {
-      createCoinTransaction({
-        userId: newUser.id || newUser._id,
-        type: "earned",
-        amount: initialCoins,
-        reason: `Welcome bonus for using referral code ${referredByCode}`,
-      });
-    }
 
     return NextResponse.json(
       {
         success: true,
         message: "Account created successfully! You can now log in.",
-        userId: newUser.id || newUser._id,
+        userId: newUser.id,
       },
       { status: 201 }
     );
