@@ -17,7 +17,7 @@ import {
 import { IBooking, ICoinTransaction } from "@/types";
 import { formatINR } from "@/lib/utils";
 import { LOYALTY_RULES } from "@/lib/constants";
-import BookingCard from "./BookingCard";
+import HistoryRow from "./HistoryRow";
 import CoinHistory from "./CoinHistory";
 
 interface CustomerDashboardViewProps {
@@ -226,9 +226,20 @@ export default function CustomerDashboardView({
       {activeTab === "upcoming" && (
         <div className="space-y-6">
           {upcomingBookings.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="glass-panel rounded-3xl border border-white/10 overflow-hidden divide-y divide-white/10 shadow-2xl">
+              {/* Desktop Table/List Header */}
+              <div className="hidden md:flex items-center justify-between gap-6 py-3 px-6 bg-charcoal-850/90 text-gray-400 font-mono text-[10px] uppercase tracking-wider font-semibold border-b border-white/10">
+                <span className="flex-1">Service &amp; Vehicle</span>
+                <span className="min-w-[210px] text-left">Schedule</span>
+                <span className="min-w-[200px] flex items-center justify-between">
+                  <span>Payable</span>
+                  <span>Status</span>
+                </span>
+                <span className="min-w-[220px] text-right">Actions</span>
+              </div>
+
               {upcomingBookings.map((b) => (
-                <BookingCard
+                <HistoryRow
                   key={b._id}
                   booking={b}
                   onStatusChange={handleStatusChange}
@@ -261,9 +272,20 @@ export default function CustomerDashboardView({
       {activeTab === "history" && (
         <div className="space-y-6">
           {pastBookings.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="glass-panel rounded-3xl border border-white/10 overflow-hidden divide-y divide-white/10 shadow-2xl">
+              {/* Desktop Table/List Header */}
+              <div className="hidden md:flex items-center justify-between gap-6 py-3 px-6 bg-charcoal-850/90 text-gray-400 font-mono text-[10px] uppercase tracking-wider font-semibold border-b border-white/10">
+                <span className="flex-1">Service &amp; Vehicle</span>
+                <span className="min-w-[210px] text-left">Schedule</span>
+                <span className="min-w-[200px] flex items-center justify-between">
+                  <span>Amount</span>
+                  <span>Status</span>
+                </span>
+                <span className="min-w-[220px] text-right">Actions</span>
+              </div>
+
               {pastBookings.map((b) => (
-                <BookingCard
+                <HistoryRow
                   key={b._id}
                   booking={b}
                   onStatusChange={handleStatusChange}
