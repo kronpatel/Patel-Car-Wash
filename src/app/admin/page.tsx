@@ -6,7 +6,8 @@ import { authOptions } from "@/lib/auth";
 import { getBookings, countUsers } from "@/lib/jsonDb";
 import AdminStats from "@/components/admin/AdminStats";
 import BookingsTable from "@/components/admin/BookingsTable";
-import { ShieldAlert, Sparkles, Radio } from "lucide-react";
+import { ShieldAlert, Sparkles, Radio, Ticket } from "lucide-react";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -77,9 +78,19 @@ export default async function AdminPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-charcoal-900 border border-white/10 text-xs text-gray-300">
-            <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            <span>Bay 1, 2, 3 Active • Live Auto-Sync</span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+            <Link
+              href="/admin/promos"
+              className="neon-glow-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-neon-sm"
+            >
+              <Ticket className="w-3.5 h-3.5" />
+              <span>Promo Codes Manager</span>
+            </Link>
+
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-charcoal-900 border border-white/10 text-xs text-gray-300">
+              <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+              <span>Bay 1, 2, 3 Active • Live Auto-Sync</span>
+            </div>
           </div>
         </div>
 
