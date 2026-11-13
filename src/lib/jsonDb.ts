@@ -1,13 +1,15 @@
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
-import { IUser, IBooking, ICoinTransaction, ICoupon, BookingStatus, PlanType, VehicleType } from "@/types";
+import { IUser, IBooking, ICoinTransaction, ICoupon, IPromoCode, IPromoCodeUsage, DiscountType, BookingStatus, PlanType, VehicleType } from "@/types";
 
 export interface JsonDatabase {
   users: Array<IUser & { id: string }>;
   bookings: Array<IBooking & { id: string }>;
   coinTransactions: Array<ICoinTransaction & { id: string }>;
   coupons: Array<ICoupon & { id?: string }>;
+  promoCodes: Array<IPromoCode & { id: string }>;
+  promoCodeUsages: Array<IPromoCodeUsage & { id: string }>;
   counters?: Record<string, number>;
 }
 
@@ -61,6 +63,39 @@ function getDefaultData(): JsonDatabase {
         updatedAt: now,
       },
     ],
+    // New admin-configurable promo codes (replaces the legacy `coupons` array).
+    // Seeded with the existing FIRST50 + WEEKEND10 migrated to the new schema.
+    promoCodes: [
+      {
+        id: "promo-1",
+        _id: "promo-1",
+        code: "FIRST50",
+        discountType: "FLAT",
+        discountValue: 50,
+        minBookingAmount: 300,
+        expiryDate: "2027-12-31T23:59:59.999Z",
+        isActive: true,
+        usageLimitPerUser: 1,
+        totalUsageLimit: null,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: "promo-2",
+        _id: "promo-2",
+        code: "WEEKEND10",
+        discountType: "PERCENTAGE",
+        discountValue: 10,
+        minBookingAmount: null,
+        expiryDate: "2027-12-31T23:59:59.999Z",
+        isActive: true,
+        usageLimitPerUser: 1,
+        totalUsageLimit: null,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ],
+    promoCodeUsages: [],
     counters: {},
   };
 }
@@ -87,6 +122,8 @@ export function getDb(): JsonDatabase {
     if (!parsed.bookings) parsed.bookings = [];
     if (!parsed.coinTransactions) parsed.coinTransactions = [];
     if (!parsed.coupons) parsed.coupons = [];
+    if (!parsed.promoCodes) parsed.promoCodes = [];
+    if (!parsed.promoCodeUsages) parsed.promoCodeUsages = [];
     if (!parsed.counters) parsed.counters = {};
 
     return parsed;
@@ -416,11 +453,205 @@ export function getCoinTransactionsByUserId(
 }
 
 // ─────────────────────────────────────────────────────────────
-// COUPON OPERATIONS
+// COUPON OPERATIONS (legacy — superseded by PROMO CODE OPERATIONS below)
 // ─────────────────────────────────────────────────────────────
 
 export function findCouponByCode(code: string): ICoupon | null {
   const db = getDb();
   const normalized = code.trim().toUpperCase();
   return db.coupons.find((c) => c.code.trim().toUpperCase() === normalized) || null;
+}
+
+// ─────────────────────────────────────────────────────────────
+// PROMO CODE OPERATIONS (admin-configurable, with usage limits)
+// ─────────────────────────────────────────────────────────────
+
+function genPromoId(): string {
+  return `promo_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+}
+
+function genUsageId(): string {
+  return `usage_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+}
+
+/** Returns all promo codes for the admin list view. */
+export function getAllPromoCodes(): Array<IPromoCode & { id: string }> {
+  const db = getDb();
+  return [...db.promoCodes].sort(
+    (a, b) =>
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+  );
+}
+
+/** Case-insensitive code lookup. */
+export function findPromoCodeByCode(code: string): (IPromoCode & { id: string }) | null {
+  const db = getDb();
+  const normalized = code.trim().toUpperCase();
+  return db.promoCodes.find((c) => c.code.trim().toUpperCase() === normalized) || null;
+}
+
+export function findPromoCodeById(id: string): (IPromoCode & { id: string }) | null {
+  const db = getDb();
+  return db.promoCodes.find((c) => c.id === id || c._id === id) || null;
+}
+
+/** Live status derived from expiry + isActive, for display badges. */
+export function getPromoCodeStatus(promo: IPromoCode): "active" | "expired" | "inactive" {
+  if (!promo.isActive) return "inactive";
+  if (promo.expiryDate && new Date(promo.expiryDate) < new Date()) return "expired";
+  return "active";
+}
+
+/** Number of times a specific user has redeemed a given promo code. */
+export function countPromoUsageByUser(promoCodeId: string, userId: string): number {
+  const db = getDb();
+  return db.promoCodeUsages.filter(
+    (u) => u.promoCodeId === promoCodeId && u.userId === userId
+  ).length;
+}
+
+/** Total redemptions across all users, for the list "Used" column. */
+export function countPromoUsageTotal(promoCodeId: string): number {
+  const db = getDb();
+  return db.promoCodeUsages.filter((u) => u.promoCodeId === promoCodeId).length;
+}
+
+/** Full usage history for one promo code, newest first (for the History modal). */
+export function getPromoCodeUsages(
+  promoCodeId: string
+): Array<IPromoCodeUsage & { id: string }> {
+  const db = getDb();
+  return db.promoCodeUsages
+    .filter((u) => u.promoCodeId === promoCodeId)
+    .sort(
+      (a, b) =>
+        new Date(b.usedAt).getTime() - new Date(a.usedAt).getTime()
+    );
+}
+
+export interface CreatePromoCodeInput {
+  code: string;
+  discountType: DiscountType;
+  discountValue: number;
+  minBookingAmount?: number | null;
+  expiryDate: string;
+  isActive: boolean;
+  usageLimitPerUser: number;
+  totalUsageLimit?: number | null;
+}
+
+export function createPromoCode(data: CreatePromoCodeInput): IPromoCode & { id: string } {
+  const db = getDb();
+  const now = new Date().toISOString();
+  const id = genPromoId();
+
+  const newPromo: IPromoCode & { id: string } = {
+    id,
+    _id: id,
+    code: data.code.trim().toUpperCase(),
+    discountType: data.discountType,
+    discountValue: data.discountValue,
+    minBookingAmount: data.minBookingAmount ?? null,
+    expiryDate: data.expiryDate,
+    isActive: data.isActive,
+    usageLimitPerUser: data.usageLimitPerUser,
+    totalUsageLimit: data.totalUsageLimit ?? null,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  db.promoCodes.push(newPromo);
+  saveDb(db);
+  return newPromo;
+}
+
+export function updatePromoCode(
+  id: string,
+  updates: Partial<CreatePromoCodeInput>
+): (IPromoCode & { id: string }) | null {
+  const db = getDb();
+  const index = db.promoCodes.findIndex((c) => c.id === id || c._id === id);
+  if (index === -1) return null;
+
+  const current = db.promoCodes[index];
+  const updated: IPromoCode & { id: string } = {
+    ...current,
+    ...updates,
+    id: current.id,
+    _id: current._id || current.id,
+    code:
+      updates.code !== undefined
+        ? updates.code.trim().toUpperCase()
+        : current.code,
+    updatedAt: new Date().toISOString(),
+  };
+
+  db.promoCodes[index] = updated;
+  saveDb(db);
+  return updated;
+}
+
+export function deletePromoCode(id: string): boolean {
+  const db = getDb();
+  const initialLength = db.promoCodes.length;
+  db.promoCodes = db.promoCodes.filter((c) => c.id !== id && c._id !== id);
+
+  if (db.promoCodes.length !== initialLength) {
+    // Keep usage history even after a code is deleted, for audit.
+    saveDb(db);
+    return true;
+  }
+  return false;
+}
+
+/** Records one redemption of a promo code by a user on a booking. */
+export function recordPromoUsage(data: {
+  promoCodeId: string;
+  promoCode: string;
+  userId: string;
+  userName: string;
+  bookingId: string;
+  bookingRef: string;
+}): IPromoCodeUsage & { id: string } {
+  const db = getDb();
+  const id = genUsageId();
+  const now = new Date().toISOString();
+
+  const usage: IPromoCodeUsage & { id: string } = {
+    id,
+    _id: id,
+    promoCodeId: data.promoCodeId,
+    promoCode: data.promoCode,
+    userId: data.userId,
+    userName: data.userName,
+    bookingId: data.bookingId,
+    bookingRef: data.bookingRef,
+    usedAt: now,
+  };
+
+  db.promoCodeUsages.push(usage);
+  saveDb(db);
+  return usage;
+}
+
+/**
+ * Computes the discount for a promo code against an order amount.
+ * Returns { discount } or null if the promo is invalid/inactive/expired.
+ * Does NOT enforce usage limits — call the usage-counting functions for that.
+ */
+export function computePromoDiscount(
+  promo: IPromoCode,
+  orderAmount: number
+): { discount: number } | null {
+  if (!promo.isActive) return null;
+  if (promo.expiryDate && new Date(promo.expiryDate) < new Date()) return null;
+  if (promo.minBookingAmount && orderAmount < promo.minBookingAmount) return null;
+
+  let discount = 0;
+  if (promo.discountType === "FLAT") {
+    discount = promo.discountValue;
+  } else {
+    discount = Math.round((orderAmount * promo.discountValue) / 100);
+  }
+  return { discount };
 }

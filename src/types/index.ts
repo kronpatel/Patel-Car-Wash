@@ -79,7 +79,7 @@ export interface ICoinTransaction {
   createdAt: string | Date;
 }
 
-// Promo Coupon Interface
+// Promo Coupon Interface (DEPRECATED — superseded by IPromoCode below; retained for migration only)
 export interface ICoupon {
   _id?: string;
   id?: string;
@@ -92,6 +92,40 @@ export interface ICoupon {
   isActive: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
+}
+
+// Promo Code Discount Type
+export type DiscountType = "FLAT" | "PERCENTAGE";
+
+// Promo Code — admin-configurable discount code (replaces the legacy ICoupon)
+export interface IPromoCode {
+  _id?: string;
+  id?: string;
+  code: string;
+  discountType: DiscountType;
+  discountValue: number;
+  minBookingAmount?: number | null;
+  expiryDate: string;
+  isActive: boolean;
+  // Key setting for the FIRST50 bug: how many times ONE user may redeem this code.
+  usageLimitPerUser: number;
+  // Optional cap on total redemptions across all users.
+  totalUsageLimit?: number | null;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+// Promo Code Usage — one record per redemption, for limit enforcement & history.
+export interface IPromoCodeUsage {
+  _id?: string;
+  id?: string;
+  promoCodeId: string;
+  promoCode: string; // denormalized for quick display
+  userId: string;
+  userName: string; // denormalized for quick display
+  bookingId: string;
+  bookingRef: string; // denormalized CW-XXXX for quick display
+  usedAt: string | Date;
 }
 
 // Service Catalogue Item

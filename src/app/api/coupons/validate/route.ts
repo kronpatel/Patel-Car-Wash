@@ -1,34 +1,51 @@
 import { NextResponse } from "next/server";
-import { findCouponByCode } from "@/lib/jsonDb";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import {
+  findPromoCodeByCode,
+  computePromoDiscount,
+  countPromoUsageByUser,
+  countPromoUsageTotal,
+} from "@/lib/jsonDb";
 
 /**
  * POST /api/coupons/validate
- * Validates promo coupon codes for booking discounts from JSON DB.
+ * Validates a promo code against an order amount and the logged-in user's
+ * redemption history. Enforces per-user and total usage limits.
  */
 export async function POST(req: Request) {
   try {
+    // Promo usage is tracked per user, so a session is required to enforce limits.
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Please log in to apply a promo code" },
+        { status: 401 }
+      );
+    }
+
     const { code, orderAmount } = await req.json();
 
     if (!code || typeof code !== "string") {
       return NextResponse.json(
-        { success: false, error: "Please provide a coupon code" },
+        { success: false, error: "Please provide a promo code" },
         { status: 400 }
       );
     }
 
-    const coupon = findCouponByCode(code);
+    const promo = findPromoCodeByCode(code);
 
-    if (!coupon || !coupon.isActive) {
+    if (!promo || !promo.isActive) {
       return NextResponse.json(
-        { success: false, error: "Invalid coupon code" },
+        { success: false, error: "Invalid or inactive promo code" },
         { status: 404 }
       );
     }
 
     // Check expiration
-    if (coupon.validUntil && new Date() > new Date(coupon.validUntil)) {
+    if (promo.expiryDate && new Date(promo.expiryDate) < new Date()) {
       return NextResponse.json(
-        { success: false, error: "This coupon code has expired" },
+        { success: false, error: "This promo code has expired" },
         { status: 400 }
       );
     }
@@ -36,37 +53,67 @@ export async function POST(req: Request) {
     const amount = Number(orderAmount) || 0;
 
     // Check minimum order value
-    if (coupon.minOrderValue && amount < coupon.minOrderValue) {
+    if (promo.minBookingAmount && amount < promo.minBookingAmount) {
       return NextResponse.json(
         {
           success: false,
-          error: `Coupon requires a minimum booking amount of ₹${coupon.minOrderValue}`,
+          error: `Promo requires a minimum booking amount of ₹${promo.minBookingAmount}`,
         },
         { status: 400 }
       );
     }
 
-    // Calculate discount
-    let discount = 0;
-    if (coupon.discountAmount && coupon.discountAmount > 0) {
-      discount = coupon.discountAmount;
-    } else if (coupon.discountPercent && coupon.discountPercent > 0) {
-      discount = Math.round((amount * coupon.discountPercent) / 100);
+    // ── THE FIX: per-user usage limit ──
+    const usedByThisUser = countPromoUsageByUser(promo.id, session.user.id);
+    if (usedByThisUser >= promo.usageLimitPerUser) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `You have already used this promo code. Limit is ${promo.usageLimitPerUser} time${
+            promo.usageLimitPerUser > 1 ? "s" : ""
+          } per user.`,
+        },
+        { status: 409 }
+      );
     }
 
-    const discountedTotal = Math.max(amount - discount, 99);
+    // ── Total usage limit across all users (optional) ──
+    if (promo.totalUsageLimit) {
+      const usedTotal = countPromoUsageTotal(promo.id);
+      if (usedTotal >= promo.totalUsageLimit) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "This promo code has reached its total usage limit and is no longer available.",
+          },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Calculate discount
+    const result = computePromoDiscount(promo, amount);
+    if (!result) {
+      return NextResponse.json(
+        { success: false, error: "Promo code could not be applied to this order" },
+        { status: 400 }
+      );
+    }
+
+    const discountedTotal = Math.max(amount - result.discount, 99);
 
     return NextResponse.json({
       success: true,
-      code: coupon.code,
-      discount,
+      code: promo.code,
+      discount: result.discount,
       discountedTotal,
-      message: `Coupon applied! ₹${discount} off.`,
+      message: `Promo applied! ₹${result.discount} off.`,
     });
   } catch (error) {
     console.error("POST /api/coupons/validate error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to validate coupon" },
+      { success: false, error: "Failed to validate promo code" },
       { status: 500 }
     );
   }

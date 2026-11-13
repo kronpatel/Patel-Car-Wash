@@ -1,0 +1,51 @@
+// ============================================================================
+// Prisma Schema Definition: PromoCode & PromoCodeUsage
+// Save as part of prisma/schema.prisma when migrating to PostgreSQL/MySQL/SQLite
+// ============================================================================
+
+enum DiscountType {
+  FLAT
+  PERCENTAGE
+}
+
+model PromoCode {
+  id                 String            @id @default(cuid())
+  code               String            @unique
+  discountType       DiscountType
+  discountValue      Float
+  minBookingAmount   Float?
+  expiryDate         DateTime
+  isActive           Boolean           @default(true)
+
+  // THE KEY FIX: Configurable per-user limit. 1 = single use per account.
+  usageLimitPerUser  Int               @default(1)
+
+  // Optional global limit across all accounts.
+  totalUsageLimit    Int?
+
+  usages             PromoCodeUsage[]
+
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([code])
+  @@index([isActive, expiryDate])
+}
+
+model PromoCodeUsage {
+  id           String     @id @default(cuid())
+  promoCodeId  String
+  promoCode    PromoCode  @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bookingId    String     @unique
+  booking      Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  usedAt       DateTime   @default(now())
+
+  // Fast lookups when enforcing: "has THIS user used THIS promo code >= limit?"
+  @@index([promoCodeId, userId])
+  @@index([userId])
+}

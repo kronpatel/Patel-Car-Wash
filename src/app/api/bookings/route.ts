@@ -9,7 +9,11 @@ import {
   updateUser,
   createBooking,
   deleteBooking,
-  findCouponByCode,
+  findPromoCodeByCode,
+  computePromoDiscount,
+  countPromoUsageByUser,
+  countPromoUsageTotal,
+  recordPromoUsage,
   createCoinTransaction,
   updateBooking,
 } from "@/lib/jsonDb";
@@ -182,23 +186,68 @@ export async function POST(req: Request) {
       }
     }
 
-    // 3. Handle Promo Coupon Validation
+    // 3. Handle Promo Code Validation (with per-user & total usage limits)
+    let appliedPromo: { id: string; code: string } | null = null;
     if (couponCode && typeof couponCode === "string") {
-      const coupon = findCouponByCode(couponCode);
+      const promo = findPromoCodeByCode(couponCode);
 
-      if (coupon && coupon.isActive) {
-        const notExpired = !coupon.validUntil || new Date() <= new Date(coupon.validUntil);
-        const orderMeetsMin = !coupon.minOrderValue || basePrice >= coupon.minOrderValue;
+      if (promo && promo.isActive) {
+        // Expiry & min-order checks
+        const notExpired = !promo.expiryDate || new Date(promo.expiryDate) >= new Date();
+        if (!notExpired) {
+          return NextResponse.json(
+            { success: false, error: "This promo code has expired" },
+            { status: 400 }
+          );
+        }
 
-        if (notExpired && orderMeetsMin) {
-          if (coupon.discountAmount && coupon.discountAmount > 0) {
-            discount += coupon.discountAmount;
-          } else if (coupon.discountPercent && coupon.discountPercent > 0) {
-            const percentOff = Math.round(
-              (basePrice * coupon.discountPercent) / 100
+        const orderMeetsMin =
+          !promo.minBookingAmount || basePrice >= promo.minBookingAmount;
+        if (!orderMeetsMin) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: `Promo requires a minimum booking amount of ₹${promo.minBookingAmount}`,
+            },
+            { status: 400 }
+          );
+        }
+
+        // ── THE FIX: per-user usage limit (enforced server-side on booking too,
+        // since this route validates independently of /api/coupons/validate) ──
+        const usedByThisUser = countPromoUsageByUser(promo.id, user.id || user._id);
+        if (usedByThisUser >= promo.usageLimitPerUser) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: `You have already used this promo code. Limit is ${promo.usageLimitPerUser} time${
+                promo.usageLimitPerUser > 1 ? "s" : ""
+              } per user.`,
+            },
+            { status: 409 }
+          );
+        }
+
+        // ── Total usage limit across all users (optional) ──
+        if (promo.totalUsageLimit) {
+          const usedTotal = countPromoUsageTotal(promo.id);
+          if (usedTotal >= promo.totalUsageLimit) {
+            return NextResponse.json(
+              {
+                success: false,
+                error:
+                  "This promo code has reached its total usage limit and is no longer available.",
+              },
+              { status: 409 }
             );
-            discount += percentOff;
           }
+        }
+
+        // Compute discount via the shared helper
+        const result = computePromoDiscount(promo, basePrice);
+        if (result) {
+          discount += result.discount;
+          appliedPromo = { id: promo.id, code: promo.code };
         }
       }
     }
@@ -269,6 +318,20 @@ export async function POST(req: Request) {
         amount: coinsUsed,
         reason: `Discount of ₹${calculateCoinsDiscount(coinsUsed)} on booking ${booking.bookingId}`,
         bookingId: booking.id || booking._id,
+      });
+    }
+
+    // 6.5 Record promo code usage (one entry per redemption) for limit enforcement & history.
+    // Done after the coins rollback window so a rolled-back booking doesn't burn a
+    // user's one-time promo. Persisted via the jsonDb layer (writeFileSync).
+    if (appliedPromo) {
+      recordPromoUsage({
+        promoCodeId: appliedPromo.id,
+        promoCode: appliedPromo.code,
+        userId: user.id || user._id,
+        userName: user.name,
+        bookingId: booking.id,
+        bookingRef: booking.bookingId,
       });
     }
 
