@@ -103,7 +103,7 @@ export default function RootLayout({
           <Header />
 
           {/* Main Page Content */}
-          <main className="w-full flex-grow relative z-10">{children}</main>
+          <main className="w-full flex-grow relative">{children}</main>
 
           {/* Floating WhatsApp Quick Action Button */}
           <WhatsAppFloatingBtn />

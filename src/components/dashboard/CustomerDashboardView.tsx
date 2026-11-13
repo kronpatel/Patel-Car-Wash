@@ -19,6 +19,7 @@ import { formatINR } from "@/lib/utils";
 import { LOYALTY_RULES } from "@/lib/constants";
 import HistoryRow from "./HistoryRow";
 import CoinHistory from "./CoinHistory";
+import QrPassModal from "./QrPassModal";
 
 interface CustomerDashboardViewProps {
   user: {
@@ -43,6 +44,7 @@ export default function CustomerDashboardView({
     "upcoming"
   );
   const [copiedReferral, setCopiedReferral] = useState(false);
+  const [activeQrBooking, setActiveQrBooking] = useState<IBooking | null>(null);
 
   const upcomingBookings = bookings.filter((b) =>
     ["confirmed", "in_progress", "ready"].includes(b.status)
@@ -243,6 +245,7 @@ export default function CustomerDashboardView({
                   key={b._id}
                   booking={b}
                   onStatusChange={handleStatusChange}
+                  onShowQrPass={(b) => setActiveQrBooking(b)}
                 />
               ))}
             </div>
@@ -289,6 +292,7 @@ export default function CustomerDashboardView({
                   key={b._id}
                   booking={b}
                   onStatusChange={handleStatusChange}
+                  onShowQrPass={(b) => setActiveQrBooking(b)}
                 />
               ))}
             </div>
@@ -313,6 +317,12 @@ export default function CustomerDashboardView({
           <CoinHistory transactions={initialTransactions} />
         </div>
       )}
+
+      {/* Centered QR Pass Popup Modal (Rendered outside list containers to avoid CSS backdrop-filter / overflow trapping) */}
+      <QrPassModal
+        booking={activeQrBooking}
+        onClose={() => setActiveQrBooking(null)}
+      />
     </div>
   );
 }
