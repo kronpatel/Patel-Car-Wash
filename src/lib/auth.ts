@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { findUserByEmail } from "@/lib/jsonDb";
+import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -20,7 +20,10 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Please enter both email and password");
         }
 
-        const user = findUserByEmail(credentials.email);
+        const normalizedEmail = credentials.email.toLowerCase().trim();
+        const user = await prisma.user.findUnique({
+          where: { email: normalizedEmail },
+        });
 
         if (!user || !user.password) {
           throw new Error("Invalid email or password");
@@ -36,7 +39,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         return {
-          id: user.id || user._id,
+          id: user.id,
           name: user.name,
           email: user.email,
           phone: user.phone,
