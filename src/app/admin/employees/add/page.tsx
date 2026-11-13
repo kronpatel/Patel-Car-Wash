@@ -59,6 +59,7 @@ export default function AddStaffPage() {
         <div className="glass-panel p-6 sm:p-10 rounded-3xl border border-white/10 bg-charcoal-850/90 shadow-2xl">
           <StaffForm
             mode="add"
+            initialData={{ email: "", name: "", mobile: "", baseSalary: 15000 }}
             loading={loading}
             onSubmit={handleSubmit}
             onCancel={() => router.push("/admin/employees")}

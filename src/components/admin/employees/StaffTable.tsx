@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { User, Edit, KeyRound, Trash2, Calendar, Phone, Briefcase } from "lucide-react";
+import { User, Edit, KeyRound, Trash2, Calendar, Phone, Briefcase, Mail } from "lucide-react";
 import type { StaffWithStats } from "@/types/staff";
 import StatusBadge from "./StatusBadge";
 import { formatDate } from "@/lib/validators";
@@ -123,11 +123,19 @@ export default function StaffTable({
                 </td>
 
                 {/* Contact */}
-                <td className="py-3.5 px-4 font-mono text-xs text-gray-300">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-gray-400" />
-                    +91 {member.mobile}
-                  </span>
+                <td className="py-3.5 px-4 text-xs text-gray-300">
+                  <div className="space-y-0.5">
+                    <p className="font-mono flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-gray-400" />
+                      +91 {member.mobile}
+                    </p>
+                    {member.email && (
+                      <p className="text-[11px] text-gray-400 flex items-center gap-1.5 truncate max-w-[190px]">
+                        <Mail className="w-3 h-3 text-gray-500 shrink-0" />
+                        <span className="truncate">{member.email}</span>
+                      </p>
+                    )}
+                  </div>
                 </td>
 
                 {/* Joining Date */}

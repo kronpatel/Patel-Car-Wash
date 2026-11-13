@@ -101,7 +101,9 @@ async function runPhase2Tests() {
 
   // Pre-test cleanup: ensure test mobile does not exist in DB
   await prisma.staff.deleteMany({
-    where: { mobile: TEST_MOBILE },
+    where: {
+      OR: [{ mobile: TEST_MOBILE }, { email: "test.staff@cleanpro.com" }],
+    },
   });
 
   let createdStaffId: string | null = null;
@@ -187,6 +189,7 @@ async function runPhase2Tests() {
 
   const staffPayload = {
     name: "Test Staff",
+    email: "test.staff@cleanpro.com",
     mobile: TEST_MOBILE,
     joiningDate: "2026-11-14",
     role: "Helper",

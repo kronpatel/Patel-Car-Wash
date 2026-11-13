@@ -13,10 +13,13 @@ async function runTest() {
   console.log("=================================================\n");
 
   const testMobile = "9876543210";
+  const testEmail = "test.staff@cleanpro.com";
 
   // Clean any old leftover test data if exists
   await prisma.staff.deleteMany({
-    where: { mobile: testMobile },
+    where: {
+      OR: [{ mobile: testMobile }, { email: testEmail }],
+    },
   });
 
   // Step 1: Verify getNextStaffId
@@ -48,6 +51,7 @@ async function runTest() {
     data: {
       staffId: testStaffId,
       name: "Test Staff Member",
+      email: testEmail,
       mobile: testMobile,
       password: hashedPassword,
       address: "Rankuva, Gujarat",

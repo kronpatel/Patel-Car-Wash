@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { STAFF_ROLES } from "@/lib/constants";
-import { isValidMobile, isValidStaffRole } from "@/lib/validators";
+import { isValidMobile, isValidStaffRole, isValidEmail } from "@/lib/validators";
 import { apiPost, apiPut } from "@/lib/api-client";
 import PhotoUpload from "./PhotoUpload";
 import type {
@@ -13,7 +13,7 @@ import type {
   UpdateStaffInput,
   StaffStatus,
 } from "@/types/staff";
-import { Loader2, Info, ShieldCheck, IndianRupee } from "lucide-react";
+import { Loader2, Info, ShieldCheck, IndianRupee, Mail } from "lucide-react";
 
 interface StaffFormProps {
   mode: "add" | "edit";
@@ -39,6 +39,7 @@ export default function StaffForm({
 
   // Form State
   const [name, setName] = useState(initialData?.name || "");
+  const [email, setEmail] = useState(initialData?.email || "");
   const [mobile, setMobile] = useState(initialData?.mobile || "");
   const [role, setRole] = useState(initialData?.role || STAFF_ROLES[0]);
   const [joiningDate, setJoiningDate] = useState(() => {
@@ -60,6 +61,7 @@ export default function StaffForm({
   useEffect(() => {
     if (initialData) {
       if (initialData.name) setName(initialData.name);
+      if (initialData.email) setEmail(initialData.email);
       if (initialData.mobile) setMobile(initialData.mobile);
       if (initialData.role) setRole(initialData.role);
       if (initialData.joiningDate) {
@@ -77,6 +79,10 @@ export default function StaffForm({
 
     if (!name.trim() || name.trim().length < 2) {
       errs.name = "Full name must be at least 2 characters.";
+    }
+
+    if (!email.trim() || !isValidEmail(email)) {
+      errs.email = "Please enter a valid email address";
     }
 
     if (!mobile.trim() || !isValidMobile(mobile)) {
@@ -118,6 +124,7 @@ export default function StaffForm({
 
     const payload: CreateStaffInput | UpdateStaffInput = {
       name: name.trim(),
+      email: email.trim().toLowerCase(),
       mobile: mobile.trim().replace(/^(\+91|91)/, ""),
       role: role.trim(),
       joiningDate: new Date(joiningDate).toISOString(),
@@ -184,6 +191,30 @@ export default function StaffForm({
             />
             {errors.name && (
               <p className="text-xs text-red-400 mt-1">{errors.name}</p>
+            )}
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-1.5">
+              Email Address <span className="text-red-400">*</span>
+            </label>
+            <div className="relative flex items-center">
+              <Mail className="absolute left-3.5 w-4 h-4 text-gray-400" />
+              <input
+                type="email"
+                required
+                placeholder="staff@example.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) setErrors((prev) => ({ ...prev, email: "" }));
+                }}
+                className="w-full pl-11 pr-4 py-3 bg-charcoal-900 border border-white/10 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:border-neon-blue/60 focus:ring-1 focus:ring-neon-blue/60 transition-all"
+              />
+            </div>
+            {errors.email && (
+              <p className="text-xs text-red-400 mt-1">{errors.email}</p>
             )}
           </div>
 
