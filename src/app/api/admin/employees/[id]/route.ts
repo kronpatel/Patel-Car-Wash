@@ -5,7 +5,7 @@ import {
   validateStaffInput,
 } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
-import { getStaffWithStats, findStaffByMobile } from "@/lib/staff-helpers";
+import { getStaffWithStats, findStaffByMobile, findStaffByEmail } from "@/lib/staff-helpers";
 
 export const dynamic = "force-dynamic";
 
@@ -90,7 +90,17 @@ export async function PUT(req: Request, { params }: RouteParams) {
 
     const updateData = { ...validation.data };
 
-    // 2. Mobile duplicate check if mobile changed
+    // 2. Email duplicate check if email changed
+    if (updateData.email && updateData.email !== staff.email) {
+      const existingEmail = await prisma.staff.findUnique({
+        where: { email: updateData.email },
+      });
+      if (existingEmail && existingEmail.id !== staff.id) {
+        return apiError("Email already registered to another staff member", 400);
+      }
+    }
+
+    // 3. Mobile duplicate check if mobile changed
     if (updateData.mobile && updateData.mobile !== staff.mobile) {
       const existing = await findStaffByMobile(updateData.mobile);
       if (existing && existing.id !== staff.id) {

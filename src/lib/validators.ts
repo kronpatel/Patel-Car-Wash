@@ -2,6 +2,15 @@ import { STAFF_ROLES } from "./constants";
 import { format, parseISO } from "date-fns";
 
 /**
+ * Validate email format
+ * Rules: standard email regex
+ */
+export function isValidEmail(email: string): boolean {
+  if (!email || typeof email !== "string") return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+/**
  * Check if mobile number is valid Indian number
  * Rules: 10 digits, starts with 6-9
  */

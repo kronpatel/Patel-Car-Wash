@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { isValidMobile, isValidStaffRole } from "@/lib/validators";
+import { isValidMobile, isValidStaffRole, isValidEmail } from "@/lib/validators";
 import type { StaffStatus } from "@/types/staff";
 
 /**
@@ -42,6 +42,7 @@ export interface StaffValidationResult {
   error?: string;
   data?: {
     name?: string;
+    email?: string;
     mobile?: string;
     address?: string | null;
     joiningDate?: Date;
@@ -64,7 +65,7 @@ export function validateStaffInput(
     return { valid: false, error: "Invalid request payload" };
   }
 
-  const { name, mobile, address, joiningDate, role, photo, baseSalary, status } = input;
+  const { name, email, mobile, address, joiningDate, role, photo, baseSalary, status } = input;
   const sanitized: StaffValidationResult["data"] = {};
 
   // 1. Name validation
@@ -75,7 +76,15 @@ export function validateStaffInput(
     sanitized.name = name.trim();
   }
 
-  // 2. Mobile validation
+  // 2. Email validation
+  if (!isUpdate || email !== undefined) {
+    if (!email || typeof email !== "string" || !isValidEmail(email)) {
+      return { valid: false, error: "Please enter a valid email address" };
+    }
+    sanitized.email = email.trim().toLowerCase();
+  }
+
+  // 3. Mobile validation
   if (!isUpdate || mobile !== undefined) {
     if (!mobile || typeof mobile !== "string" || !isValidMobile(mobile)) {
       return { valid: false, error: "Please enter a valid 10-digit Indian mobile number." };

@@ -28,6 +28,7 @@ export type {
 // DTOs for API input
 export interface CreateStaffInput {
   name: string;
+  email: string;
   mobile: string;
   address?: string;
   joiningDate: string; // ISO date string
@@ -74,9 +75,9 @@ export interface GenerateQRInput {
 }
 
 export interface StaffLoginInput {
-  mobile: string;
+  identifier: string; // email OR mobile number
   password: string;
-  token: string; // QR token
-  latitude: number;
-  longitude: number;
+  token?: string; // QR token
+  latitude?: number;
+  longitude?: number;
 }

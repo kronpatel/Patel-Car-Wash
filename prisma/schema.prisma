@@ -201,25 +201,27 @@ model PromoCodeUsage {
 // ─────────────────────────────────────────────────────────────
 
 model Staff {
-  id           String      @id @default(cuid())
-  staffId      String      @unique          // EMP001, EMP002...
-  name         String
-  photo        String?                       // URL / path
-  mobile       String      @unique           // Login ID
-  password     String                        // bcrypt hashed (default = mobile)
-  address      String?     @db.Text
-  joiningDate  DateTime
-  role         String                        // Manager / Cashier / Helper / Salesman
-  status       StaffStatus @default(ACTIVE)
-  baseSalary   Float       @default(0)
+  id          String      @id @default(cuid())
+  staffId     String      @unique          // EMP001, EMP002...
+  name        String
+  photo       String?     @db.LongText     // Base64 image (gallery upload)
+  email       String      @unique          // NEW — Login ID
+  mobile      String      @unique          // Login ID (alternative)
+  password    String                       // bcrypt hashed (default = mobile)
+  address     String?     @db.Text
+  joiningDate DateTime
+  role        String                       // Manager / Cashier / Helper / Salesman
+  status      StaffStatus @default(ACTIVE)
+  baseSalary  Float       @default(0)
 
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
-  attendances  Attendance[]
-  salaries     Salary[]
-  advances     Advance[]
+  attendances Attendance[]
+  salaries    Salary[]
+  advances    Advance[]
 
+  @@index([email])
   @@index([mobile])
   @@index([staffId])
   @@index([status])

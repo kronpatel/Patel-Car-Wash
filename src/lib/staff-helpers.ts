@@ -68,6 +68,37 @@ export async function findStaffByMobile(mobile: string) {
 }
 
 /**
+ * Check if email already exists in staff table
+ */
+export async function findStaffByEmail(email: string) {
+  if (!email) return null;
+  return prisma.staff.findUnique({
+    where: { email: email.trim().toLowerCase() },
+  });
+}
+
+/**
+ * Find staff by Email OR Mobile (Dual Login support)
+ */
+export async function findStaffByIdentifier(identifier: string) {
+  if (!identifier) return null;
+  const trimmed = identifier.trim().toLowerCase();
+  const cleanMobile = identifier.replace(/[\s\-()]/g, "").replace(/^(\+91|91)/, "");
+
+  return prisma.staff.findFirst({
+    where: {
+      OR: [
+        { email: trimmed },
+        { mobile: identifier.trim() },
+        { mobile: cleanMobile },
+        { mobile: `+91${cleanMobile}` },
+        { staffId: trimmed.toUpperCase() },
+      ],
+    },
+  });
+}
+
+/**
  * Check if staff ID already exists
  */
 export async function findStaffByStaffId(staffId: string) {
@@ -186,6 +217,7 @@ export async function getAllStaffWithStats(filters?: {
     const term = filters.search.trim();
     where.OR = [
       { name: { contains: term } },
+      { email: { contains: term } },
       { mobile: { contains: term } },
       { staffId: { contains: term } },
     ];

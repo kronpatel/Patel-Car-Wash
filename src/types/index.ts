@@ -18,7 +18,7 @@ export type BookingStatus =
   | "completed"
   | "cancelled";
 
-export type UserRole = "customer" | "admin";
+export type UserRole = "customer" | "admin" | "staff";
 
 export type ServiceCategory = "wash" | "detailing" | "bike";
 

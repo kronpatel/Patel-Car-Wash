@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import {
   getAllStaffWithStats,
   findStaffByMobile,
+  findStaffByEmail,
   getNextStaffId,
   hashPassword,
 } from "@/lib/staff-helpers";
@@ -68,11 +69,18 @@ export async function POST(req: Request) {
       return apiError(validation.error || "Invalid input data", 400);
     }
 
-    const { name, mobile, address, joiningDate, role, photo, baseSalary } = validation.data;
+    const { name, email, mobile, address, joiningDate, role, photo, baseSalary } = validation.data;
 
-    // 2. Check duplicate mobile
-    const existing = await findStaffByMobile(mobile!);
-    if (existing) {
+    // 2. Check duplicate email & mobile
+    const existingEmail = await prisma.staff.findUnique({
+      where: { email: email! },
+    });
+    if (existingEmail) {
+      return apiError("Email already registered", 400);
+    }
+
+    const existingMobile = await findStaffByMobile(mobile!);
+    if (existingMobile) {
       return apiError("Mobile number already registered.", 400);
     }
 
@@ -87,6 +95,7 @@ export async function POST(req: Request) {
       data: {
         staffId,
         name: name!,
+        email: email!,
         mobile: mobile!,
         password: hashedPassword,
         address: address || null,
