@@ -1,0 +1,173 @@
+// ============================================================================
+// Patel Car'spa & Detailing Studio - Master Prisma Schema for MySQL
+// ============================================================================
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────
+
+enum Role {
+  customer
+  admin
+}
+
+enum BookingStatus {
+  confirmed
+  in_progress
+  ready
+  completed
+  cancelled
+}
+
+enum DiscountType {
+  FLAT
+  PERCENTAGE
+}
+
+enum CoinTxType {
+  earned
+  redeemed
+}
+
+// ─────────────────────────────────────────────────────────────
+// MODELS
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id               String            @id @default(cuid())
+  name             String
+  email            String            @unique
+  password         String
+  phone            String
+  role             Role              @default(customer)
+  cleanCoins       Int               @default(0)
+  referralCode     String            @unique
+  referredBy       String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  // Relationships
+  bookings         Booking[]
+  coinTransactions CoinTransaction[]
+  promoUsages      PromoCodeUsage[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([referralCode])
+  @@map("users")
+}
+
+model Booking {
+  id                     String            @id @default(cuid())
+  bookingId              String            @unique // e.g. "CW-2026-0001"
+  userId                 String
+  user                   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customerName           String
+  customerPhone          String
+  customerEmail          String
+  service                String
+  plan                   String            // "Basic Wash" | "Premium Wash" | "Full Detailing"
+  vehicleType            String            // "Small Sedan" | "Pickup" | "SUV" | "Minibus" | "Bike"
+  vehicleNumber          String            // e.g. "GJ-03-AJ-7231"
+  date                   String            // YYYY-MM-DD
+  timeSlot               String            // "12:00 PM - 01:00 PM"
+  address                String?           @db.Text
+  notes                  String?           @db.Text
+  basePrice              Float
+  coinsUsed              Int               @default(0)
+  discount               Float             @default(0)
+  finalPrice             Float
+  status                 BookingStatus     @default(confirmed)
+  qrCode                 String?           @db.MediumText // Base64 data URL
+
+  // WhatsApp notification delivery flags
+  whatsappConfirmed      Boolean           @default(false)
+  whatsappReady          Boolean           @default(false)
+  whatsappReminder       Boolean           @default(false)
+
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  // Relationships
+  coinTransactions       CoinTransaction[]
+  promoCodeUsage         PromoCodeUsage?
+
+  @@index([userId])
+  @@index([bookingId])
+  @@index([date, timeSlot])
+  @@index([status])
+  @@map("bookings")
+}
+
+model CoinTransaction {
+  id         String     @id @default(cuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       CoinTxType
+  amount     Int
+  reason     String
+  bookingId  String?
+  booking    Booking?   @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  createdAt  DateTime   @default(now())
+
+  @@index([userId])
+  @@index([bookingId])
+  @@map("coin_transactions")
+}
+
+model PromoCode {
+  id                 String            @id @default(cuid())
+  code               String            @unique
+  discountType       DiscountType      @default(FLAT)
+  discountValue      Float
+  minBookingAmount   Float?
+  expiryDate         DateTime
+  isActive           Boolean           @default(true)
+
+  // KEY FEATURE: Configurable per-user limit. 1 = single use per account.
+  usageLimitPerUser  Int               @default(1)
+
+  // Optional cap on total redemptions across all users
+  totalUsageLimit    Int?
+
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  // Relationships
+  usages             PromoCodeUsage[]
+
+  @@index([code])
+  @@index([isActive, expiryDate])
+  @@map("promo_codes")
+}
+
+model PromoCodeUsage {
+  id           String     @id @default(cuid())
+  promoCodeId  String
+  promoCodeRef PromoCode  @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  promoCode    String     // Denormalized for display/audit
+
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userName     String     // Denormalized for display/audit
+
+  bookingId    String     @unique
+  booking      Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  bookingRef   String     // e.g. "CW-2026-0001"
+
+  usedAt       DateTime   @default(now())
+
+  // Compound index for fast per-user limit enforcement
+  @@index([promoCodeId, userId])
+  @@index([userId])
+  @@map("promo_code_usages")
+}
