@@ -3,11 +3,12 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getBookings, countUsers } from "@/lib/jsonDb";
+import { prisma } from "@/lib/prisma";
 import AdminStats from "@/components/admin/AdminStats";
 import BookingsTable from "@/components/admin/BookingsTable";
-import { ShieldAlert, Sparkles, Radio, Ticket } from "lucide-react";
+import { ShieldAlert, Radio, Ticket } from "lucide-react";
 import Link from "next/link";
+import { IBooking } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +31,18 @@ export default async function AdminPage() {
 
   const todayStr = new Date().toLocaleDateString("en-CA");
 
-  // 1. Compute Admin KPI Telemetry
-  const todayBookings = getBookings({ date: todayStr });
-  const allBookings = getBookings();
-  const totalCustomers = countUsers({ role: "customer" });
+  // 1. Query live telemetry from MySQL via Prisma
+  const [allBookingsRaw, totalCustomers] = await Promise.all([
+    prisma.booking.findMany({
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.user.count({
+      where: { role: "customer" },
+    }),
+  ]);
+
+  const allBookings = allBookingsRaw as unknown as IBooking[];
+  const todayBookings = allBookings.filter((b) => b.date === todayStr);
 
   const todayTotal = todayBookings.length;
   const todayCompleted = todayBookings.filter((b) => b.status === "completed").length;
@@ -57,8 +66,6 @@ export default async function AdminPage() {
     totalRevenue,
     totalCustomers,
   };
-
-  const initialBookings = allBookings;
 
   return (
     <div className="w-full py-10 sm:py-16">
@@ -89,7 +96,7 @@ export default async function AdminPage() {
 
             <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-charcoal-900 border border-white/10 text-xs text-gray-300">
               <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-              <span>Bay 1, 2, 3 Active • Live Auto-Sync</span>
+              <span>MySQL Live Sync</span>
             </div>
           </div>
         </div>
@@ -103,12 +110,12 @@ export default async function AdminPage() {
             <h2 className="text-xl font-heading font-bold text-white flex items-center gap-2">
               <span>Appointment Dispatcher</span>
             </h2>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-400 font-mono">
               Total Recorded Jobs: {allBookings.length}
             </span>
           </div>
 
-          <BookingsTable initialBookings={initialBookings} />
+          <BookingsTable initialBookings={allBookings} />
         </div>
       </div>
     </div>

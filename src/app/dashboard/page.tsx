@@ -3,8 +3,9 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { findUserById, getBookings, getCoinTransactionsByUserId } from "@/lib/jsonDb";
+import { prisma } from "@/lib/prisma";
 import CustomerDashboardView from "@/components/dashboard/CustomerDashboardView";
+import { IBooking, ICoinTransaction } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -20,26 +21,38 @@ export default async function DashboardPage() {
     redirect("/login?callbackUrl=/dashboard");
   }
 
-  // Fetch fresh user profile from JSON DB
-  const dbUser = findUserById(session.user.id);
+  // Fetch fresh user profile from MySQL via Prisma
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+  });
 
   if (!dbUser) {
     redirect("/login");
   }
 
-  // Fetch bookings for this customer
-  const bookings = getBookings({ userId: dbUser.id || dbUser._id });
+  // Fetch bookings and coin transactions for this customer concurrently
+  const [rawBookings, rawTransactions] = await Promise.all([
+    prisma.booking.findMany({
+      where: { userId: dbUser.id },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.coinTransaction.findMany({
+      where: { userId: dbUser.id },
+      orderBy: { createdAt: "desc" },
+      take: 30,
+    }),
+  ]);
 
-  // Fetch coin transactions for this customer
-  const transactions = getCoinTransactionsByUserId(dbUser.id || dbUser._id, 30);
+  const bookings = rawBookings as unknown as IBooking[];
+  const transactions = rawTransactions as unknown as ICoinTransaction[];
 
   const userProfile = {
-    id: dbUser.id || dbUser._id,
+    id: dbUser.id,
     name: dbUser.name,
     email: dbUser.email,
     phone: dbUser.phone,
-    cleanCoins: dbUser.cleanCoins || 0,
-    referralCode: dbUser.referralCode || "",
+    cleanCoins: dbUser.cleanCoins,
+    referralCode: dbUser.referralCode,
   };
 
   return (

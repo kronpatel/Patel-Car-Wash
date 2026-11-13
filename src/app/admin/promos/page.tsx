@@ -4,17 +4,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import {
-  getAllPromoCodes,
-  countPromoUsageTotal,
-  getPromoCodeStatus,
-} from "@/lib/jsonDb";
+import { prisma } from "@/lib/prisma";
 import PromosManager from "@/components/admin/PromosManager";
 import {
   Tag,
-  ShieldAlert,
   Sparkles,
-  Calendar,
   Lock,
   Layers,
   ArrowLeft,
@@ -29,6 +23,12 @@ export const metadata: Metadata = {
     "Patel Car'spa & Detailing Studio promo code control station. Configure discounts, expiration dates, and per-user redemption limits.",
 };
 
+function getPromoCodeStatus(promo: { isActive: boolean; expiryDate: Date }): "active" | "expired" | "inactive" {
+  if (!promo.isActive) return "inactive";
+  if (promo.expiryDate && new Date(promo.expiryDate) < new Date()) return "expired";
+  return "active";
+}
+
 export default async function AdminPromosPage() {
   const session = await getServerSession(authOptions);
 
@@ -41,11 +41,20 @@ export default async function AdminPromosPage() {
     redirect("/dashboard");
   }
 
-  // Fetch all promo codes with computed statistics
-  const rawPromos = getAllPromoCodes();
+  // Fetch all promo codes from MySQL with usage counts
+  const rawPromos = await prisma.promoCode.findMany({
+    include: {
+      _count: {
+        select: { usages: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
   const initialPromos = rawPromos.map((p) => ({
     ...p,
-    usedCount: countPromoUsageTotal(p.id),
+    expiryDate: p.expiryDate.toISOString(),
+    usedCount: p._count.usages,
     computedStatus: getPromoCodeStatus(p),
   }));
 
@@ -85,7 +94,7 @@ export default async function AdminPromosPage() {
               Promo Code Management
             </h1>
             <p className="text-sm text-gray-400">
-              Configure promo rules, discounts, and strict per-user usage limits.
+              Configure promo rules, discounts, and strict per-user usage limits in MySQL.
               Logged in as Master Administrator ({session.user.name})
             </p>
           </div>
@@ -121,7 +130,7 @@ export default async function AdminPromosPage() {
               </span>
             </div>
             <p className="text-xs text-gray-400 font-medium">
-              Registered in studio system
+              Registered in MySQL database
             </p>
           </div>
 

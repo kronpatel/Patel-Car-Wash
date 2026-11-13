@@ -3,10 +3,10 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { findUserById } from "@/lib/jsonDb";
+import { prisma } from "@/lib/prisma";
 import { PlanType, VehicleType } from "@/types";
 import BookingForm from "@/components/booking/BookingForm";
-import { Sparkles, ShieldCheck, Clock, Coffee, Wifi, Video } from "lucide-react";
+import { Sparkles, ShieldCheck, Clock, Coffee, Video } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -40,8 +40,10 @@ export default async function BookPage({ searchParams }: BookPageProps) {
     redirect(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
-  // 2. Query fresh coin balance from database
-  const dbUser = findUserById(session.user.id);
+  // 2. Query fresh coin balance from MySQL database
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+  });
   const userCoins = dbUser?.cleanCoins ?? session.user.cleanCoins ?? 0;
 
   // Extract any pre-filled query parameters
