@@ -19,7 +19,7 @@ import {
 const CarModel = dynamic(() => import("./CarModel"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full min-h-[460px] sm:min-h-[520px] lg:min-h-[580px] xl:min-h-[640px] flex items-center justify-center bg-transparent border-0 shadow-none">
+    <div className="w-full h-full min-h-[300px] md:min-h-[520px] lg:min-h-[580px] xl:min-h-[640px] flex items-center justify-center bg-transparent border-0 shadow-none">
       <div className="flex flex-col items-center gap-3">
         <div className="w-8 h-8 rounded-full border-2 border-red-500/20 border-t-[#E50914] animate-spin" />
         <span className="font-mono text-xs text-gray-400 uppercase tracking-widest">
@@ -75,12 +75,12 @@ export default function Hero() {
       />
 
       {/* Main Split Content: Left (Text/Branding in front) | Right/Back (3D Car Model) */}
-      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 relative min-h-[460px] lg:min-h-[540px] xl:min-h-[600px] flex items-center">
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 relative md:min-h-[460px] lg:min-h-[540px] xl:min-h-[600px] flex flex-col md:flex-row md:items-center">
 
         {/* ================================================================
             LEFT: Exact Same Text & Branding Layout (Layered in FRONT via z-20)
             ================================================================ */}
-        <div className="w-full lg:max-w-xl flex flex-col items-start text-left relative z-20 py-2 sm:py-3 lg:py-4 pointer-events-auto">
+        <div className="w-full md:max-w-xl flex flex-col items-center md:items-start text-center md:text-left relative z-20 py-2 sm:py-3 lg:py-4 pointer-events-auto">
           {/* Eyebrow Badge */}
           <motion.div
             initial={{ opacity: 0, y: -8 }}
@@ -97,7 +97,7 @@ export default function Hero() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.35, delay: 0.05 }}
-            className="w-full relative"
+            className="w-full relative flex justify-center md:justify-start"
           >
             {/* The logo itself — aspect ratio matches the SVG viewBox (23500x7900 ≈ 2.97:1) */}
             <div className="relative">
@@ -107,7 +107,7 @@ export default function Hero() {
                 width={500}
                 height={168}
                 priority
-                className="w-[300px] md:w-[450px] lg:w-[500px] h-auto object-contain select-none drop-shadow-[0_0_1px_rgba(255,255,255,0.5)]"
+                className="w-[300px] max-w-full md:w-[450px] lg:w-[500px] h-auto object-contain select-none drop-shadow-[0_0_1px_rgba(255,255,255,0.5)]"
               />
             </div>
 
@@ -122,7 +122,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="text-2xl sm:text-3xl font-heading font-extrabold text-white tracking-tight mt-5"
+            className="text-2xl sm:text-3xl font-heading font-extrabold text-white tracking-tight mt-4 sm:mt-5"
           >
             Drive Clean.{" "}
             <span
@@ -140,7 +140,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.15 }}
-            className="text-sm sm:text-base text-gray-400 font-sans leading-relaxed max-w-xl mt-2.5 mb-7"
+            className="text-sm sm:text-base text-gray-400 font-sans leading-relaxed max-w-xl mt-2.5 mb-6 sm:mb-7"
           >
             Professional car spa, detailing and protection services to keep your
             ride looking brand new. Flat ₹399 express wash across all vehicle
@@ -177,7 +177,7 @@ export default function Hero() {
         {/* ================================================================
             RIGHT / BACK: 3D Car Model (Positioned on the Right Side)
             ================================================================ */}
-        <div className="w-full lg:absolute lg:right-[-14vw] xl:right-[-11vw] 2xl:right-[-8vw] lg:top-1/2 lg:-translate-y-1/2 lg:w-[70vw] lg:max-w-[1200px] h-[460px] sm:h-[520px] lg:h-[580px] xl:h-[640px] z-0 overflow-visible bg-transparent border-0 shadow-none pointer-events-auto">
+        <div className="w-full h-[300px] relative md:absolute md:right-[-14vw] xl:right-[-11vw] 2xl:right-[-8vw] md:top-1/2 md:-translate-y-1/2 md:w-[70vw] md:max-w-[1200px] md:h-[520px] lg:h-[580px] xl:h-[640px] z-0 overflow-visible bg-transparent border-0 shadow-none pointer-events-auto">
           <CarModel />
 
           {/* Monospace Interactive Drag Hint */}
