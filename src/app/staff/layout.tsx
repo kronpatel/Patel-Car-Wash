@@ -12,24 +12,13 @@ export default function StaffLayout({
 }) {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const pathname = usePathname();
-
-  const isLoginPage = pathname === "/staff/login";
 
   useEffect(() => {
     if (status === "loading") return;
 
-    // Login page handling: don't block unauthenticated staff from logging in
-    if (isLoginPage) {
-      if (status === "authenticated" && session?.user?.role === "staff") {
-        router.push("/staff/dashboard");
-      }
-      return;
-    }
-
     // Protected staff sub-routes
     if (status === "unauthenticated") {
-      router.push("/staff/login");
+      router.push("/login");
     } else if (session?.user?.role !== "staff") {
       if (session?.user?.role === "admin") {
         router.push("/admin/employees");
@@ -37,9 +26,9 @@ export default function StaffLayout({
         router.push("/dashboard");
       }
     }
-  }, [status, session, router, isLoginPage]);
+  }, [status, session, router]);
 
-  if (status === "loading" && !isLoginPage) {
+  if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-charcoal-950">
         <Loader2 className="w-8 h-8 animate-spin text-neon-blue" />

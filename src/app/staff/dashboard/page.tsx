@@ -11,7 +11,7 @@ export default function StaffDashboard() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/staff/login");
+      router.push("/login");
     }
   }, [status, router]);
 
@@ -42,7 +42,7 @@ export default function StaffDashboard() {
           </div>
 
           <button
-            onClick={() => signOut({ callbackUrl: "/staff/login" })}
+            onClick={() => signOut({ callbackUrl: "/login" })}
             className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
           >
             <LogOut className="w-4 h-4" />

@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
+import { UserRole } from "@/types";
 import {
   Car,
   Sparkles,
@@ -22,7 +23,7 @@ import {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const { data: session, status } = useSession();
   const registered = searchParams.get("registered");
 
   const [email, setEmail] = useState("");
@@ -30,6 +31,29 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [justSignedIn, setJustSignedIn] = useState(false);
+
+  // After a successful sign-in, NextAuth updates the client session. Once it
+  // reflects the authenticated role, redirect to the role-based dashboard.
+  useEffect(() => {
+    if (!justSignedIn) return;
+    if (status === "loading") return;
+
+    if (status === "authenticated" && session?.user?.role) {
+      const role = session.user.role as UserRole;
+      const redirectUrl =
+        role === "staff"
+          ? "/staff/dashboard"
+          : role === "admin"
+            ? "/admin"
+            : "/dashboard";
+      router.push(redirectUrl);
+      router.refresh();
+    }
+
+    // Only run once per sign-in attempt.
+    setJustSignedIn(false);
+  }, [justSignedIn, status, session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +83,9 @@ function LoginForm() {
         setErrorMessage(res.error);
         setIsLoading(false);
       } else {
-        router.push(callbackUrl);
+        // Session will now be updated by NextAuth; the useEffect below drives
+        // the role-based redirect once the client session reflects the role.
+        setJustSignedIn(true);
         router.refresh();
       }
     } catch {
