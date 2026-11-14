@@ -78,13 +78,13 @@ export function getCurrentLocation(): Promise<{
         let message = "Unable to retrieve your location.";
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            message = "Location permission denied. Please allow GPS access in your browser.";
+            message = "Location permission denied. Please allow location access.";
             break;
           case error.POSITION_UNAVAILABLE:
-            message = "Location information is unavailable. Please check your GPS signal.";
+            message = "GPS unavailable. Turn on location services.";
             break;
           case error.TIMEOUT:
-            message = "Location request timed out. Please try again.";
+            message = "Location timeout. Please try again.";
             break;
         }
         reject(new Error(message));
