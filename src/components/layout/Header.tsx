@@ -42,11 +42,30 @@ export default function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Monitor scroll position to apply glassmorphic backdrop
+  // Monitor scroll position with hysteresis & rAF to eliminate header flickering
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollY = window.scrollY;
+          setIsScrolled((prev) => {
+            // Hysteresis dead-band: activate at > 40px, deactivate at < 15px
+            if (!prev && scrollY > 40) return true;
+            if (prev && scrollY < 15) return false;
+            return prev;
+          });
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
+
+    // Check initial position on mount (e.g. page refresh while scrolled)
+    if (window.scrollY > 40) {
+      setIsScrolled(true);
+    }
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -91,10 +110,10 @@ export default function Header() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 w-full transition-all duration-300",
+        "sticky top-0 z-40 w-full border-b py-3.5 sm:py-4 transition-all duration-300",
         isScrolled
-          ? "bg-charcoal-950/90 backdrop-blur-md border-b border-white/10 shadow-lg py-3"
-          : "bg-transparent py-4 sm:py-5"
+          ? "bg-charcoal-950/90 backdrop-blur-md border-white/10 shadow-lg"
+          : "bg-transparent backdrop-blur-none border-transparent shadow-none"
       )}
     >
       <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
