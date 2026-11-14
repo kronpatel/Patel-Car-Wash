@@ -207,7 +207,7 @@ export default function Header() {
                         )}
 
                         <button
-                          onClick={() => signOut({ callbackUrl: "/" })}
+                          onClick={() => signOut({ callbackUrl: "/login" })}
                           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors text-left"
                         >
                           <LogOut className="w-4 h-4" />
@@ -354,7 +354,7 @@ export default function Header() {
 
                 {session?.user ? (
                   <button
-                    onClick={() => signOut({ callbackUrl: "/" })}
+                    onClick={() => signOut({ callbackUrl: "/login" })}
                     className="w-full py-2.5 text-center text-sm text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
                   >
                     Sign Out
