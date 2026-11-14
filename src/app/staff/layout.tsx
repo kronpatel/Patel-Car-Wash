@@ -12,9 +12,13 @@ export default function StaffLayout({
 }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
+
+  const isScanPage = pathname === "/staff/attendance/scan";
 
   useEffect(() => {
-    if (status === "loading") return;
+    // Exclude scan page from auth redirects
+    if (isScanPage || status === "loading") return;
 
     // Protected staff sub-routes
     if (status === "unauthenticated") {
@@ -26,8 +30,14 @@ export default function StaffLayout({
         router.push("/dashboard");
       }
     }
-  }, [status, session, router]);
+  }, [status, session, router, isScanPage]);
 
+  // Immediately render public scan page without auth blocking/spinner
+  if (isScanPage) {
+    return <>{children}</>;
+  }
+
+  // Loading state for protected staff routes
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-charcoal-950">

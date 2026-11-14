@@ -16,6 +16,7 @@ import {
   RefreshCw,
   AlertCircle,
   CheckCircle2,
+  QrCode,
 } from "lucide-react";
 import { STAFF_ROLES } from "@/lib/constants";
 import { apiGet, apiDelete, apiPost } from "@/lib/api-client";
@@ -173,7 +174,7 @@ export default function AdminEmployeesPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             <button
               type="button"
               onClick={() => fetchEmployees(true)}
@@ -183,6 +184,14 @@ export default function AdminEmployeesPage() {
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-neon-blue" : ""}`} />
             </button>
+
+            <Link
+              href="/admin/employees/attendance"
+              className="px-5 py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 glass-panel border border-gold/40 text-gold hover:bg-gold/10 transition-colors shadow-lg"
+            >
+              <QrCode className="w-4 h-4 text-gold" />
+              <span>Attendance QR</span>
+            </Link>
 
             <Link
               href="/admin/employees/add"

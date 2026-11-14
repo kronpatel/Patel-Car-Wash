@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import AdminStats from "@/components/admin/AdminStats";
 import BookingsTable from "@/components/admin/BookingsTable";
-import { ShieldAlert, Radio, Ticket } from "lucide-react";
+import { ShieldAlert, Radio, Ticket, QrCode, Users } from "lucide-react";
 import Link from "next/link";
 import { IBooking } from "@/types";
 
@@ -85,18 +85,34 @@ export default async function AdminPage() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/admin/employees"
+              className="px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-neon-blue/15 text-neon-blue border border-neon-blue/30 hover:bg-neon-blue/25 transition-colors"
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>Employees</span>
+            </Link>
+
+            <Link
+              href="/admin/employees/attendance"
+              className="px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-gold/15 text-gold border border-gold/30 hover:bg-gold/25 transition-colors"
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              <span>Attendance QR</span>
+            </Link>
+
             <Link
               href="/admin/promos"
               className="neon-glow-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-neon-sm"
             >
               <Ticket className="w-3.5 h-3.5" />
-              <span>Promo Codes Manager</span>
+              <span>Promo Codes</span>
             </Link>
 
-            <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-charcoal-900 border border-white/10 text-xs text-gray-300">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-charcoal-900 border border-white/10 text-xs text-gray-300">
               <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-              <span>MySQL Live Sync</span>
+              <span>MySQL Live</span>
             </div>
           </div>
         </div>

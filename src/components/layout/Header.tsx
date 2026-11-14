@@ -17,6 +17,7 @@ import {
   Calendar,
   ChevronDown,
   Users,
+  QrCode,
 } from "lucide-react";
 import CoinBadge from "@/components/ui/CoinBadge";
 import { cn } from "@/lib/utils";
@@ -68,7 +69,9 @@ export default function Header() {
 
   const userRole = session?.user?.role;
   const userCoins = session?.user?.cleanCoins ?? 0;
-  const isEmployeesActive = pathname?.startsWith("/admin/employees");
+  const isAttendanceActive = pathname === "/admin/employees/attendance";
+  const isEmployeesActive =
+    pathname?.startsWith("/admin/employees") && !isAttendanceActive;
   const isStaffRoute = pathname?.startsWith("/staff");
   const isAdminActive = pathname === "/admin" || pathname?.startsWith("/admin/promos");
 
@@ -221,6 +224,18 @@ export default function Header() {
                               <Users className="w-4 h-4 text-neon-blue" />
                               <span>Employees Hub</span>
                             </Link>
+                            <Link
+                              href="/admin/employees/attendance"
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
+                                isAttendanceActive
+                                  ? "text-gold bg-gold/15 font-semibold"
+                                  : "text-gray-300 hover:text-white hover:bg-white/5"
+                              )}
+                            >
+                              <QrCode className="w-4 h-4 text-gold" />
+                              <span>Attendance QR</span>
+                            </Link>
                           </>
                         )}
 
@@ -359,6 +374,17 @@ export default function Header() {
                           )}
                         >
                           Employees Hub
+                        </Link>
+                        <Link
+                          href="/admin/employees/attendance"
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
+                            isAttendanceActive
+                              ? "text-gold bg-gold/15 font-semibold"
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          Attendance QR Hub
                         </Link>
                       </>
                     )}
