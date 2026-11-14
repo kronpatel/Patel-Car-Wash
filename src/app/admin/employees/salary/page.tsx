@@ -85,6 +85,13 @@ interface AutoCalculationPreview {
   existingRecord?: SalaryRecord | null;
 }
 
+interface SalarySummary {
+  count: number;
+  totalPayout: number;
+  totalPaid: number;
+  totalUnpaid: number;
+}
+
 const MONTH_NAMES = [
   "January",
   "February",
@@ -149,7 +156,7 @@ export default function SalaryManagementPage() {
       params.set("year", selectedYear.toString());
       if (statusFilter !== "ALL") params.set("status", statusFilter);
 
-      const res = await apiGet<{ records: SalaryRecord[]; summary: any }>(
+      const res = await apiGet<{ records: SalaryRecord[]; summary: SalarySummary }>(
         `/api/admin/employees/salary?${params.toString()}`
       );
       setSalaryRecords(res.records || []);

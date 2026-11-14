@@ -1,7 +1,7 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
 import React, { useState, useRef } from "react";
+import Image from "next/image";
 import { Upload, X, User, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -43,10 +43,12 @@ export default function PhotoUpload({
       <div className="relative w-32 h-32 mx-auto">
         {value ? (
           <>
-            <img
+            <Image
               src={value}
               alt="Staff"
-              className="w-full h-full object-cover rounded-full border-2 border-neon-blue/50"
+              fill
+              unoptimized
+              className="object-cover rounded-full border-2 border-neon-blue/50"
             />
             <button
               type="button"

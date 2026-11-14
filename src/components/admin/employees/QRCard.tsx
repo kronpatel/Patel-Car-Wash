@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import {
   QrCode,
   Download,
@@ -205,11 +206,13 @@ export default function QRCard({
       <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8 relative z-10">
         {/* Left: QR Image Preview */}
         <div className="relative group shrink-0">
-          <div className="w-64 h-64 p-3 bg-charcoal-900 border-2 border-neon-blue/40 rounded-2xl shadow-neon-md flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+          <div className="w-64 h-64 p-3 bg-charcoal-900 border-2 border-neon-blue/40 rounded-2xl shadow-neon-md flex items-center justify-center relative">
+            <Image
               src={qr.qrImage}
               alt="Active Attendance QR"
+              width={240}
+              height={240}
+              unoptimized
               className="w-full h-full object-contain rounded-xl"
             />
           </div>

@@ -20,6 +20,58 @@ import { SHOP_CONFIG } from "@/lib/constants";
 
 type ReportType = "staff_directory" | "monthly_attendance" | "salary_payout" | "advances";
 
+interface ReportStaffItem {
+  id: string;
+  staffId: string;
+  name: string;
+  role: string;
+  mobile: string;
+  email?: string | null;
+  status: string;
+  joiningDate?: string | Date;
+  baseSalary?: number;
+  attendanceStats?: {
+    presentDays?: number;
+    absentDays?: number;
+    attendanceRate?: number;
+  };
+}
+
+interface ReportSalaryItem {
+  id: string;
+  staffId: string;
+  month: number;
+  year: number;
+  baseSalary: number;
+  advanceCut: number;
+  deduction: number;
+  bonus: number;
+  finalSalary: number;
+  isPaid: boolean;
+  paymentMode?: string | null;
+  staff?: {
+    staffId: string;
+    name: string;
+    role: string;
+  };
+}
+
+interface ReportAdvanceItem {
+  id: string;
+  staffId: string;
+  amountGiven: number;
+  amountRecovered: number;
+  remainingBalance: number;
+  date: string | Date;
+  status: string;
+  reason?: string | null;
+  staff?: {
+    staffId: string;
+    name: string;
+    role: string;
+  };
+}
+
 const MONTH_NAMES = [
   "January",
   "February",
@@ -42,25 +94,26 @@ export default function ReportsPage() {
   const [selectedYear, setSelectedYear] = useState<number>(currentDate.getFullYear());
 
   const [loading, setLoading] = useState<boolean>(true);
-  const [staffData, setStaffData] = useState<any[]>([]);
-  const [salaryData, setSalaryData] = useState<any[]>([]);
-  const [advanceData, setAdvanceData] = useState<any[]>([]);
+  const [staffData, setStaffData] = useState<ReportStaffItem[]>([]);
+  const [salaryData, setSalaryData] = useState<ReportSalaryItem[]>([]);
+  const [advanceData, setAdvanceData] = useState<ReportAdvanceItem[]>([]);
 
   // Fetch all necessary data
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [staffRes, salaryRes, advanceRes] = await Promise.all([
-        apiGet<any[]>("/api/admin/employees"),
-        apiGet<{ records: any[] }>(`/api/admin/employees/salary?month=${selectedMonth}&year=${selectedYear}`),
-        apiGet<{ records: any[] }>("/api/admin/employees/advances"),
+        apiGet<ReportStaffItem[]>("/api/admin/employees"),
+        apiGet<{ records: ReportSalaryItem[] }>(`/api/admin/employees/salary?month=${selectedMonth}&year=${selectedYear}`),
+        apiGet<{ records: ReportAdvanceItem[] }>("/api/admin/employees/advances"),
       ]);
 
       setStaffData(staffRes || []);
       setSalaryData(salaryRes?.records || []);
       setAdvanceData(advanceRes?.records || []);
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to load report data");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to load report data";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

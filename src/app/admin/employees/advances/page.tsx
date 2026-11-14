@@ -52,6 +52,13 @@ interface AdvanceRecord {
   };
 }
 
+interface AdvanceSummary {
+  count: number;
+  totalGiven: number;
+  totalRecovered: number;
+  totalRemaining: number;
+}
+
 export default function AdvanceTrackerPage() {
   const [advances, setAdvances] = useState<AdvanceRecord[]>([]);
   const [summary, setSummary] = useState({ count: 0, totalGiven: 0, totalRecovered: 0, totalRemaining: 0 });
@@ -81,7 +88,7 @@ export default function AdvanceTrackerPage() {
       const params = new URLSearchParams();
       if (statusFilter !== "ALL") params.set("status", statusFilter);
 
-      const res = await apiGet<{ records: AdvanceRecord[]; summary: any }>(
+      const res = await apiGet<{ records: AdvanceRecord[]; summary: AdvanceSummary }>(
         `/api/admin/employees/advances?${params.toString()}`
       );
       setAdvances(res.records || []);
