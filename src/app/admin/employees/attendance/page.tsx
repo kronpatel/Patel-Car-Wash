@@ -9,6 +9,7 @@ import {
   Trash2,
   ChevronRight,
   RefreshCw,
+  ClipboardList,
 } from "lucide-react";
 import { toast } from "sonner";
 import { apiGet, apiPatch, apiDelete } from "@/lib/api-client";
@@ -145,7 +146,15 @@ export default function AttendanceQRPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/admin/employees/attendance/list"
+              className="px-4 py-2.5 rounded-xl bg-charcoal-850 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 font-bold text-sm transition-all shadow-sm flex items-center gap-2"
+            >
+              <ClipboardList className="w-4 h-4" />
+              <span>View Daily Attendance</span>
+            </Link>
+
             <button
               onClick={() => fetchQRData()}
               disabled={loading}

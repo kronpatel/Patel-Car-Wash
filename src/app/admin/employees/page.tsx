@@ -17,6 +17,9 @@ import {
   AlertCircle,
   CheckCircle2,
   QrCode,
+  Banknote,
+  CreditCard,
+  FileBarChart,
 } from "lucide-react";
 import { STAFF_ROLES } from "@/lib/constants";
 import { apiGet, apiDelete, apiPost } from "@/lib/api-client";
@@ -187,15 +190,39 @@ export default function AdminEmployeesPage() {
 
             <Link
               href="/admin/employees/attendance"
-              className="px-5 py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 glass-panel border border-gold/40 text-gold hover:bg-gold/10 transition-colors shadow-lg"
+              className="px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 glass-panel border border-gold/40 text-gold hover:bg-gold/10 transition-colors shadow-sm"
             >
-              <QrCode className="w-4 h-4 text-gold" />
+              <QrCode className="w-3.5 h-3.5 text-gold" />
               <span>Attendance QR</span>
             </Link>
 
             <Link
+              href="/admin/employees/salary"
+              className="px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 glass-panel border border-neon-blue/40 text-neon-blue hover:bg-neon-blue/10 transition-colors shadow-sm"
+            >
+              <Banknote className="w-3.5 h-3.5 text-neon-blue" />
+              <span>Salary</span>
+            </Link>
+
+            <Link
+              href="/admin/employees/advances"
+              className="px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 glass-panel border border-amber-500/40 text-amber-400 hover:bg-amber-500/10 transition-colors shadow-sm"
+            >
+              <CreditCard className="w-3.5 h-3.5 text-amber-400" />
+              <span>Advances</span>
+            </Link>
+
+            <Link
+              href="/admin/employees/reports"
+              className="px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 glass-panel border border-purple-500/40 text-purple-400 hover:bg-purple-500/10 transition-colors shadow-sm"
+            >
+              <FileBarChart className="w-3.5 h-3.5 text-purple-400" />
+              <span>Reports</span>
+            </Link>
+
+            <Link
               href="/admin/employees/add"
-              className="neon-glow-btn px-6 py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-neon-md w-full md:w-auto"
+              className="neon-glow-btn px-5 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-neon-md w-full sm:w-auto"
             >
               <Plus className="w-4 h-4" />
               <span>Add Staff</span>
