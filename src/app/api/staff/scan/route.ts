@@ -1,9 +1,11 @@
 import { NextRequest } from "next/server";
+import { headers } from "next/headers";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { apiSuccess, apiError } from "@/lib/api-helpers";
+import { checkRateLimit, resetRateLimit } from "@/lib/rate-limiter";
 import { validateQRToken } from "@/lib/qr-helpers";
-import { isWithinShopRadius } from "@/lib/location";
+import { isWithinShopRadius, isSuspiciousLocation } from "@/lib/location";
 import { LATE_MARK_TIME, SHOP_ATTENDANCE_RADIUS_METERS } from "@/lib/constants";
 import {
   getCurrentISTTime,
@@ -27,7 +29,22 @@ export async function POST(req: NextRequest) {
       return apiError("Request body is missing", 400);
     }
 
-    const { token, identifier, password, latitude, longitude } = body;
+    const { token, identifier, password, latitude, longitude, accuracy } = body;
+
+    // 0. Double-Layer Anti Brute-Force Rate Limiting (5 attempts per 15 min per IP)
+    const headerList = headers();
+    const forwarded = headerList.get("x-forwarded-for") || req.headers.get("x-forwarded-for");
+    const clientIp = (forwarded ? forwarded.split(",")[0].trim() : null) || req.ip || "127.0.0.1";
+    const rateKey = `api:staff-scan:${clientIp}`;
+    const rateLimit = checkRateLimit(rateKey, 5, 15 * 60 * 1000);
+
+    if (!rateLimit.success) {
+      const minutes = Math.max(1, Math.ceil(rateLimit.retryAfter / 60));
+      return apiError(
+        `Too many punch-in attempts. Please try again after ${minutes} minutes.`,
+        429
+      );
+    }
 
     // 1. Validate required fields
     if (!token || typeof token !== "string" || !token.trim()) {
@@ -49,6 +66,20 @@ export async function POST(req: NextRequest) {
       isNaN(longitude)
     ) {
       return apiError("Valid GPS coordinates (latitude and longitude) are required", 400);
+    }
+
+    // Step 1: Validate accuracy (must be a valid number)
+    if (typeof accuracy !== "number" || isNaN(accuracy)) {
+      return apiError("Valid GPS accuracy value is required", 400);
+    }
+
+    // Step 2: Fake GPS / Mock Location Detection Check
+    const suspiciousCheck = isSuspiciousLocation(accuracy);
+    if (suspiciousCheck.isSuspicious) {
+      return apiError(
+        suspiciousCheck.reason || "Suspicious GPS location detected. Please turn off mock location apps.",
+        400
+      );
     }
 
     // 2. Validate QR Token
@@ -93,6 +124,9 @@ export async function POST(req: NextRequest) {
     if (!isPasswordValid) {
       return apiError("Invalid credentials", 401);
     }
+
+    // Reset rate limit on successful credentials match
+    resetRateLimit(rateKey);
 
     // 5. Mark Attendance
     const todayDate = getTodayDateIST();

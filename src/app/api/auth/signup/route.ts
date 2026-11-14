@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { generateReferralCode } from "@/lib/utils";
 import { LOYALTY_RULES } from "@/lib/constants";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limiter";
 
 /**
  * POST /api/auth/signup
@@ -11,6 +12,24 @@ import { LOYALTY_RULES } from "@/lib/constants";
  */
 export async function POST(req: Request) {
   try {
+    // Brute-force & registration spam protection (max 5 signups per hour per IP)
+    const clientIp = getClientIp(req);
+    const rateLimit = checkRateLimit(`signup:${clientIp}`, 5, 60 * 60 * 1000);
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Too many registration attempts. Please wait ${Math.ceil(rateLimit.retryAfter / 60)} minutes before trying again.`,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": rateLimit.retryAfter.toString(),
+          },
+        }
+      );
+    }
+
     const { name, email, password, phone, referralCode } = await req.json();
 
     if (!name || !email || !password || !phone) {

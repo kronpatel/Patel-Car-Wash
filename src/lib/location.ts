@@ -29,6 +29,31 @@ export function getDistanceInMeters(
 }
 
 /**
+ * Validate if the GPS location is suspicious (Fake GPS / Mock Location detection)
+ * @param accuracy - GPS accuracy in meters
+ * @returns { isSuspicious: boolean; reason?: string }
+ */
+export function isSuspiciousLocation(accuracy: number): {
+  isSuspicious: boolean;
+  reason?: string;
+} {
+  // Fake GPS apps often report exactly 0 accuracy (synthetic/mock) or extremely degraded accuracy (> 100m)
+  if (accuracy === 0) {
+    return {
+      isSuspicious: true,
+      reason: "Fake GPS detected (Accuracy is 0). Please turn off mock location apps.",
+    };
+  }
+  if (accuracy > 100) {
+    return {
+      isSuspicious: true,
+      reason: `GPS accuracy is too low (${Math.round(accuracy)}m). Please move to an open area and try again.`,
+    };
+  }
+  return { isSuspicious: false };
+}
+
+/**
  * Check if given location is within shop radius
  * Uses SHOP_LOCATION and SHOP_ATTENDANCE_RADIUS_METERS from constants
  */

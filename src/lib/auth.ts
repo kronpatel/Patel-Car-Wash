@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@/types";
+import { checkRateLimit, resetRateLimit } from "@/lib/rate-limiter";
 
 const credentialsProvider =
   typeof CredentialsProvider === "function"
@@ -30,6 +31,14 @@ export const authOptions: NextAuthOptions = {
         const normalizedEmail = identifier.toLowerCase();
         const cleanMobile = identifier.replace(/[\s\-\+]/g, "").replace(/^91/, "");
 
+        // Brute-force protection: Max 5 failed attempts per 15 minutes per account
+        const accountRateKey = `login-account:${normalizedEmail || cleanMobile || identifier}`;
+        const accountRateLimit = checkRateLimit(accountRateKey, 5, 15 * 60 * 1000);
+        if (!accountRateLimit.success) {
+          const mins = Math.max(1, Math.ceil(accountRateLimit.retryAfter / 60));
+          throw new Error(`Too many failed login attempts. Please try again after ${mins} minutes.`);
+        }
+
         // ─── 1. Check User table (Admin / Customer) ───
         const user = await prisma.user.findFirst({
           where: {
@@ -49,6 +58,9 @@ export const authOptions: NextAuthOptions = {
 
           const isValid = await bcrypt.compare(credentials.password, user.password);
           if (!isValid) throw new Error("Invalid email or password");
+
+          // Reset rate limit on successful authentication
+          resetRateLimit(accountRateKey);
 
           return {
             id: user.id,
@@ -81,6 +93,9 @@ export const authOptions: NextAuthOptions = {
 
           const isValid = await bcrypt.compare(credentials.password, staff.password);
           if (!isValid) throw new Error("Invalid credentials");
+
+          // Reset rate limit on successful authentication
+          resetRateLimit(accountRateKey);
 
           return {
             id: staff.id,

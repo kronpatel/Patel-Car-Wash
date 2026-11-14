@@ -1,10 +1,40 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limiter";
 
 export async function middleware(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = req.nextUrl;
+
+  // ─── Rate Limiting (Brute-Force Protection) ───
+  // Apply to /api/staff/scan and /api/auth/callback/credentials (NextAuth Login)
+  if (
+    pathname.startsWith("/api/staff/scan") ||
+    pathname.startsWith("/api/auth/callback/credentials")
+  ) {
+    const ip = getClientIp(req);
+    const rateKey = `rate:${ip}:${pathname}`;
+    const rateLimit = checkRateLimit(rateKey, 5, 15 * 60 * 1000); // 5 attempts per 15 min per IP
+
+    if (!rateLimit.success) {
+      const minutes = Math.max(1, Math.ceil(rateLimit.retryAfter / 60));
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Too many attempts. Please try again after ${minutes} minutes.`,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": rateLimit.retryAfter.toString(),
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+  }
+
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const role = (token?.role as string | undefined) || "";
 
   // ─── Protect /staff (Except public attendance scan) ───
@@ -46,5 +76,10 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/staff/:path*", "/admin/:path*"],
+  matcher: [
+    "/staff/:path*",
+    "/admin/:path*",
+    "/api/staff/scan",
+    "/api/auth/callback/:path*",
+  ],
 };
