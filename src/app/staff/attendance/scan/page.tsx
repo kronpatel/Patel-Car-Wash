@@ -16,9 +16,10 @@ import {
   User,
   ArrowRight,
   RefreshCw,
+  ShieldAlert,
 } from "lucide-react";
 import { toast } from "sonner";
-import { getCurrentLocation, isWithinShopRadius } from "@/lib/location";
+import { getCurrentLocation, isWithinShopRadius, isSuspiciousLocation } from "@/lib/location";
 import { apiPost } from "@/lib/api-client";
 import { SHOP_ATTENDANCE_RADIUS_METERS } from "@/lib/constants";
 
@@ -27,6 +28,7 @@ type UIState =
   | "invalid_token"
   | "location_error"
   | "outside_radius"
+  | "suspicious_location"
   | "form"
   | "submitting"
   | "success";
@@ -54,7 +56,11 @@ function ScanPageContent() {
   const [uiState, setUiState] = useState<UIState>("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [distanceMeters, setDistanceMeters] = useState<number | null>(null);
-  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [coords, setCoords] = useState<{
+    latitude: number;
+    longitude: number;
+    accuracy: number;
+  } | null>(null);
 
   // Form Fields
   const [identifier, setIdentifier] = useState("");
@@ -90,7 +96,22 @@ function ScanPageContent() {
     try {
       // 2. Call getCurrentLocation() from @/lib/location
       const position = await getCurrentLocation();
-      setCoords({ latitude: position.latitude, longitude: position.longitude });
+      setCoords({
+        latitude: position.latitude,
+        longitude: position.longitude,
+        accuracy: position.accuracy,
+      });
+
+      // 2.1. Check for Fake GPS / Mock Location apps
+      const suspiciousCheck = isSuspiciousLocation(position.accuracy);
+      if (suspiciousCheck.isSuspicious) {
+        setUiState("suspicious_location");
+        setErrorMessage(
+          suspiciousCheck.reason ||
+            "Location verification failed. Please turn off Fake GPS / Mock Location apps and try again."
+        );
+        return;
+      }
 
       // 3. Check shop radius
       const radiusCheck = isWithinShopRadius(position.latitude, position.longitude);
@@ -146,6 +167,7 @@ function ScanPageContent() {
         password,
         latitude: coords.latitude,
         longitude: coords.longitude,
+        accuracy: coords.accuracy,
       });
 
       const result = (response as any).data || response;
@@ -266,6 +288,42 @@ function ScanPageContent() {
                 Location Error
               </h2>
               <p className="text-sm text-gray-300 leading-relaxed">{errorMessage}</p>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={verifyLocation}
+                  className="w-full py-3 rounded-xl bg-red-500 text-white font-bold text-sm hover:bg-red-400 transition-all shadow-md flex items-center justify-center gap-2 active:scale-98"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Retry Location Check
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ─── 3.1. Suspicious / Mock Location Screen ─── */}
+          {uiState === "suspicious_location" && (
+            <motion.div
+              key="suspicious_location"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="p-8 rounded-3xl bg-charcoal-850 border border-red-500/40 shadow-2xl text-center space-y-4"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 flex items-center justify-center mx-auto shadow-[0_0_25px_rgba(239,68,68,0.3)]">
+                <ShieldAlert className="w-9 h-9" />
+              </div>
+              <h2 className="text-xl font-bold text-white font-heading">
+                Mock Location Detected
+              </h2>
+              <p className="text-sm text-red-300 font-medium leading-relaxed">
+                {errorMessage ||
+                  "Location verification failed. Please turn off Fake GPS / Mock Location apps and try again."}
+              </p>
+              <p className="text-xs text-gray-400">
+                Attendance can only be marked using genuine device GPS inside Patel Car&apos;spa Studio.
+              </p>
 
               <div className="pt-2">
                 <button

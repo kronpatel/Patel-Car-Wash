@@ -185,6 +185,7 @@ async function runStaffScanTests() {
         password: validStaffPassword,
         latitude: STUDIO_COORDINATES.lat,
         longitude: STUDIO_COORDINATES.lng,
+        accuracy: 12,
       }),
     });
 
@@ -202,6 +203,7 @@ async function runStaffScanTests() {
           password: validStaffPassword,
           latitude: STUDIO_COORDINATES.lat,
           longitude: STUDIO_COORDINATES.lng,
+          accuracy: 12,
         }),
       });
       punchData = await retryRes.json();
@@ -229,6 +231,7 @@ async function runStaffScanTests() {
         password: validStaffPassword,
         latitude: STUDIO_COORDINATES.lat,
         longitude: STUDIO_COORDINATES.lng,
+        accuracy: 12,
       }),
     });
     const dataInvalidToken = await resInvalidToken.json();
@@ -266,6 +269,7 @@ async function runStaffScanTests() {
         password: validStaffPassword,
         latitude: farLat,
         longitude: farLng,
+        accuracy: 12,
       }),
     });
     const dataFar = await resFar.json();
@@ -288,6 +292,7 @@ async function runStaffScanTests() {
         password: "incorrect_password_wrong_123",
         latitude: STUDIO_COORDINATES.lat,
         longitude: STUDIO_COORDINATES.lng,
+        accuracy: 12,
       }),
     });
     const dataWrongPass = await resWrongPass.json();
@@ -310,6 +315,7 @@ async function runStaffScanTests() {
         password: validStaffPassword,
         latitude: STUDIO_COORDINATES.lat,
         longitude: STUDIO_COORDINATES.lng,
+        accuracy: 12,
       }),
     });
     const dataDuplicate = await resDuplicate.json();
