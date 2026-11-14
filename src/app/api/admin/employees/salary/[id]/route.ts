@@ -65,26 +65,40 @@ export async function PUT(
       updateData.paymentDate = paymentDate ? new Date(paymentDate) : new Date();
     }
 
-    // 2. Adjust financial values if provided
+    // 2. Adjust financial values if provided (block negative values)
+    if (
+      (bonus !== undefined &&
+        bonus !== null &&
+        (typeof bonus === "number" ? bonus : parseFloat(bonus)) < 0) ||
+      (deduction !== undefined &&
+        deduction !== null &&
+        (typeof deduction === "number" ? deduction : parseFloat(deduction)) < 0) ||
+      (advanceCut !== undefined &&
+        advanceCut !== null &&
+        (typeof advanceCut === "number" ? advanceCut : parseFloat(advanceCut)) < 0)
+    ) {
+      return apiError("Negative values are not allowed", 400);
+    }
+
     let newBonus = salary.bonus;
     let newDeduction = salary.deduction;
     let newAdvanceCut = salary.advanceCut;
     let isFinancialChanged = false;
 
     if (bonus !== undefined && bonus !== null) {
-      newBonus = Math.max(0, typeof bonus === "number" ? bonus : parseFloat(bonus) || 0);
+      newBonus = typeof bonus === "number" ? bonus : parseFloat(bonus) || 0;
       updateData.bonus = newBonus;
       isFinancialChanged = true;
     }
 
     if (deduction !== undefined && deduction !== null) {
-      newDeduction = Math.max(0, typeof deduction === "number" ? deduction : parseFloat(deduction) || 0);
+      newDeduction = typeof deduction === "number" ? deduction : parseFloat(deduction) || 0;
       updateData.deduction = newDeduction;
       isFinancialChanged = true;
     }
 
     if (advanceCut !== undefined && advanceCut !== null) {
-      newAdvanceCut = Math.max(0, typeof advanceCut === "number" ? advanceCut : parseFloat(advanceCut) || 0);
+      newAdvanceCut = typeof advanceCut === "number" ? advanceCut : parseFloat(advanceCut) || 0;
       updateData.advanceCut = newAdvanceCut;
       isFinancialChanged = true;
     }

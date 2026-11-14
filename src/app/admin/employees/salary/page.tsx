@@ -211,6 +211,24 @@ export default function SalaryManagementPage() {
   const handleConfirmGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!generateStaff) return;
+
+    // Strict validation: No negative values allowed
+    const parsedAdv = parseFloat(advanceCutInput);
+    const parsedBon = parseFloat(bonusInput);
+    const parsedDed = parseFloat(deductionInput);
+
+    if (
+      advanceCutInput.includes("-") ||
+      bonusInput.includes("-") ||
+      deductionInput.includes("-") ||
+      (!isNaN(parsedAdv) && parsedAdv < 0) ||
+      (!isNaN(parsedBon) && parsedBon < 0) ||
+      (!isNaN(parsedDed) && parsedDed < 0)
+    ) {
+      toast.error("Negative values are not allowed in Bonus, Deduction, or Advance Cut.");
+      return;
+    }
+
     setSubmittingGenerate(true);
 
     try {
@@ -218,9 +236,9 @@ export default function SalaryManagementPage() {
         staffId: generateStaff.id,
         month: selectedMonth,
         year: selectedYear,
-        advanceCut: parseFloat(advanceCutInput) || 0,
-        bonus: parseFloat(bonusInput) || 0,
-        deduction: parseFloat(deductionInput) || 0,
+        advanceCut: !isNaN(parsedAdv) ? parsedAdv : 0,
+        bonus: !isNaN(parsedBon) ? parsedBon : 0,
+        deduction: !isNaN(parsedDed) ? parsedDed : 0,
         remark: remarkInput.trim() || undefined,
         markPaid: markPaidInput,
         paymentMode: markPaidInput ? paymentModeInput : undefined,
@@ -785,9 +803,17 @@ export default function SalaryManagementPage() {
                       </label>
                       <input
                         type="number"
+                        min="0"
                         step="0.01"
                         value={deductionInput}
-                        onChange={(e) => setDeductionInput(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val.includes("-") || parseFloat(val) < 0) {
+                            toast.error("Negative deduction is not allowed");
+                            return;
+                          }
+                          setDeductionInput(val);
+                        }}
                         className="w-full px-3 py-2 bg-charcoal-850 border border-white/10 rounded-xl text-red-400 font-mono focus:border-neon-blue focus:outline-none"
                       />
                     </div>
@@ -801,10 +827,18 @@ export default function SalaryManagementPage() {
                       </div>
                       <input
                         type="number"
+                        min="0"
                         step="0.01"
                         max={calcPreview.pendingAdvance}
                         value={advanceCutInput}
-                        onChange={(e) => setAdvanceCutInput(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val.includes("-") || parseFloat(val) < 0) {
+                            toast.error("Negative advance recovery is not allowed");
+                            return;
+                          }
+                          setAdvanceCutInput(val);
+                        }}
                         className="w-full px-3 py-2 bg-charcoal-850 border border-white/10 rounded-xl text-amber-400 font-mono focus:border-neon-blue focus:outline-none"
                       />
                     </div>
@@ -813,9 +847,17 @@ export default function SalaryManagementPage() {
                       <label className="text-gray-300 font-semibold mb-1 block">Bonus / Incentive</label>
                       <input
                         type="number"
+                        min="0"
                         step="0.01"
                         value={bonusInput}
-                        onChange={(e) => setBonusInput(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val.includes("-") || parseFloat(val) < 0) {
+                            toast.error("Negative bonus is not allowed");
+                            return;
+                          }
+                          setBonusInput(val);
+                        }}
                         className="w-full px-3 py-2 bg-charcoal-850 border border-white/10 rounded-xl text-emerald-400 font-mono focus:border-neon-blue focus:outline-none"
                       />
                     </div>

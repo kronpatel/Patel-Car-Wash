@@ -93,6 +93,34 @@ export async function POST(req: NextRequest) {
       return apiError("Valid 4-digit year is required", 400);
     }
 
+    // Validate financial inputs (no negative values allowed)
+    const parsedBonus =
+      bonus !== undefined && bonus !== null
+        ? typeof bonus === "number"
+          ? bonus
+          : parseFloat(bonus)
+        : 0;
+    const parsedDeduction =
+      deduction !== undefined && deduction !== null
+        ? typeof deduction === "number"
+          ? deduction
+          : parseFloat(deduction)
+        : undefined;
+    const parsedAdvanceCut =
+      advanceCut !== undefined && advanceCut !== null
+        ? typeof advanceCut === "number"
+          ? advanceCut
+          : parseFloat(advanceCut)
+        : 0;
+
+    if (
+      (parsedBonus !== undefined && (isNaN(parsedBonus) || parsedBonus < 0)) ||
+      (parsedDeduction !== undefined && (isNaN(parsedDeduction) || parsedDeduction < 0)) ||
+      (parsedAdvanceCut !== undefined && (isNaN(parsedAdvanceCut) || parsedAdvanceCut < 0))
+    ) {
+      return apiError("Negative values are not allowed", 400);
+    }
+
     // Resolve staff database ID
     const staff = await prisma.staff.findFirst({
       where: {
@@ -120,9 +148,9 @@ export async function POST(req: NextRequest) {
     }
 
     const salary = await generateSalaryRecord(staff.id, m, y, {
-      advanceCut: typeof advanceCut === "number" ? advanceCut : advanceCut ? parseFloat(advanceCut) : 0,
-      bonus: typeof bonus === "number" ? bonus : bonus ? parseFloat(bonus) : 0,
-      deduction: typeof deduction === "number" ? deduction : deduction !== undefined && deduction !== null ? parseFloat(deduction) : undefined,
+      advanceCut: parsedAdvanceCut,
+      bonus: parsedBonus,
+      deduction: parsedDeduction,
       remark: remark?.trim() || undefined,
       paymentMode: paymentMode || undefined,
       markPaid: Boolean(markPaid),
