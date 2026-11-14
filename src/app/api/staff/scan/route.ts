@@ -157,8 +157,8 @@ export async function POST(req: NextRequest) {
         ? "Attendance marked as LATE (punched after 09:30 AM)"
         : "Attendance marked successfully! Have a great shift."
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error in /api/staff/scan:", error);
-    return apiError(error?.message || "Internal server error", 500);
+    return apiError("Internal server error. Please try again.", 500);
   }
 }

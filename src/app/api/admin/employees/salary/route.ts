@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiSuccess, apiError, requireAdmin } from "@/lib/api-helpers";
-import type { PaymentMode } from "@prisma/client";
+import type { Prisma, PaymentMode } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status")?.trim()?.toUpperCase(); // "PAID", "UNPAID", "ALL"
     const paymentMode = searchParams.get("paymentMode")?.trim()?.toUpperCase() as PaymentMode | undefined;
 
-    const whereClause: any = {};
+    const whereClause: Prisma.SalaryWhereInput = {};
 
     if (month && !isNaN(month)) {
       whereClause.month = month;
@@ -113,8 +113,8 @@ export async function GET(req: NextRequest) {
         totalUnpaid: Math.round(totalUnpaid * 100) / 100,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("GET /api/admin/employees/salary error:", error);
-    return apiError(error?.message || "Failed to fetch salary records", 500);
+    return apiError("Failed to fetch salary records", 500);
   }
 }

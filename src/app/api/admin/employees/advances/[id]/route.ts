@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiSuccess, apiError, requireAdmin } from "@/lib/api-helpers";
-import type { AdvanceStatus } from "@prisma/client";
+import type { Prisma, AdvanceStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +39,7 @@ export async function PUT(
     }
 
     const { amountRecovered, reason, status } = body;
-    const updateData: any = {};
+    const updateData: Prisma.AdvanceUpdateInput = {};
 
     if (amountRecovered !== undefined && amountRecovered !== null) {
       const recovered = Math.max(0, typeof amountRecovered === "number" ? amountRecovered : parseFloat(amountRecovered) || 0);
@@ -78,9 +78,9 @@ export async function PUT(
     });
 
     return apiSuccess(updated, "Advance record updated successfully");
-  } catch (error: any) {
+  } catch (error) {
     console.error("PUT /api/admin/employees/advances/[id] error:", error);
-    return apiError(error?.message || "Failed to update advance record", 500);
+    return apiError("Failed to update advance record", 500);
   }
 }
 
@@ -109,8 +109,8 @@ export async function DELETE(
     });
 
     return apiSuccess({ deletedId: id }, "Advance record deleted successfully");
-  } catch (error: any) {
+  } catch (error) {
     console.error("DELETE /api/admin/employees/advances/[id] error:", error);
-    return apiError(error?.message || "Failed to delete advance record", 500);
+    return apiError("Failed to delete advance record", 500);
   }
 }

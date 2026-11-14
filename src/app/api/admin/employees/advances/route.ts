@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiSuccess, apiCreated, apiError, requireAdmin } from "@/lib/api-helpers";
-import type { AdvanceStatus } from "@prisma/client";
+import type { Prisma, AdvanceStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     const staffId = searchParams.get("staffId")?.trim() || undefined;
     const statusParam = searchParams.get("status")?.trim()?.toUpperCase() as AdvanceStatus | undefined;
 
-    const whereClause: any = {};
+    const whereClause: Prisma.AdvanceWhereInput = {};
 
     if (staffId) {
       whereClause.OR = [
@@ -70,9 +70,9 @@ export async function GET(req: NextRequest) {
         totalRemaining: Math.round(totalRemaining * 100) / 100,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("GET /api/admin/employees/advances error:", error);
-    return apiError(error?.message || "Failed to fetch advances list", 500);
+    return apiError("Failed to fetch advances list", 500);
   }
 }
 
@@ -116,7 +116,8 @@ export async function POST(req: NextRequest) {
       return apiError("Staff member not found", 404);
     }
 
-    const advanceDate = date ? new Date(date) : new Date();
+    const parsedDate = date ? new Date(date) : new Date();
+    const advanceDate = isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
 
     const advance = await prisma.advance.create({
       data: {
@@ -142,8 +143,8 @@ export async function POST(req: NextRequest) {
     });
 
     return apiCreated(advance, `Advance of ₹${amount} granted to ${staff.name}`);
-  } catch (error: any) {
+  } catch (error) {
     console.error("POST /api/admin/employees/advances error:", error);
-    return apiError(error?.message || "Failed to grant advance", 500);
+    return apiError("Failed to grant advance", 500);
   }
 }

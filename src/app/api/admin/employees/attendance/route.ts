@@ -106,9 +106,9 @@ export async function GET(req: NextRequest) {
     }
 
     return apiSuccess(records);
-  } catch (error: any) {
+  } catch (error) {
     console.error("GET /api/admin/employees/attendance error:", error);
-    return apiError(error?.message || "Failed to fetch attendance directory", 500);
+    return apiError("Failed to fetch attendance directory", 500);
   }
 }
 
@@ -224,11 +224,11 @@ export async function POST(req: NextRequest) {
     });
 
     return apiCreated(attendance, "Attendance marked successfully");
-  } catch (error: any) {
-    if (error?.code === "P2002") {
+  } catch (error: unknown) {
+    if (typeof error === "object" && error !== null && "code" in error && (error as { code: string }).code === "P2002") {
       return apiError("Attendance already marked for this date", 400);
     }
     console.error("POST /api/admin/employees/attendance error:", error);
-    return apiError(error?.message || "Failed to mark attendance manually", 500);
+    return apiError("Failed to mark attendance manually", 500);
   }
 }

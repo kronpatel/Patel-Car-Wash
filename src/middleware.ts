@@ -7,11 +7,16 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const role = (token?.role as string | undefined) || "";
 
-  // ─── Protect /staff/dashboard ───
-  // Only staff may enter. Customers/admins are bounced to their own dashboard.
-  if (pathname.startsWith("/staff/dashboard")) {
+  // ─── Protect /staff (Except public attendance scan) ───
+  // Only staff may enter protected staff routes. Customers/admins are bounced.
+  if (pathname.startsWith("/staff")) {
+    if (pathname.startsWith("/staff/attendance/scan")) {
+      return NextResponse.next();
+    }
     if (!token) {
-      return NextResponse.redirect(new URL("/login", req.url));
+      return NextResponse.redirect(
+        new URL("/login?callbackUrl=" + encodeURIComponent(pathname), req.url)
+      );
     }
     if (role !== "staff") {
       return NextResponse.redirect(new URL("/dashboard", req.url));
@@ -41,5 +46,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/staff/dashboard/:path*", "/admin/:path*"],
+  matcher: ["/staff/:path*", "/admin/:path*"],
 };

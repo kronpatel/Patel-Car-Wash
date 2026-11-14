@@ -81,8 +81,8 @@ export async function GET(req: NextRequest) {
       leave,
       notMarked,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("GET /api/admin/employees/attendance/stats error:", error);
-    return apiError(error?.message || "Failed to fetch attendance stats", 500);
+    return apiError("Failed to fetch attendance stats", 500);
   }
 }

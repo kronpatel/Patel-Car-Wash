@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiSuccess, apiError, requireAdmin } from "@/lib/api-helpers";
-import type { PaymentMode } from "@prisma/client";
+import type { Prisma, PaymentMode } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +50,7 @@ export async function PUT(
       remark,
     } = body;
 
-    const updateData: any = {};
+    const updateData: Prisma.SalaryUpdateInput = {};
 
     // 1. Mark as Paid or Unmarked
     if (unmarkPaid === true) {
@@ -119,9 +119,9 @@ export async function PUT(
     });
 
     return apiSuccess(updated, "Salary record updated successfully");
-  } catch (error: any) {
+  } catch (error) {
     console.error("PUT /api/admin/employees/salary/[id] error:", error);
-    return apiError(error?.message || "Failed to update salary record", 500);
+    return apiError("Failed to update salary record", 500);
   }
 }
 
@@ -165,8 +165,8 @@ export async function DELETE(
     });
 
     return apiSuccess({ deletedId: id }, "Salary record deleted successfully");
-  } catch (error: any) {
+  } catch (error) {
     console.error("DELETE /api/admin/employees/salary/[id] error:", error);
-    return apiError(error?.message || "Failed to delete salary record", 500);
+    return apiError("Failed to delete salary record", 500);
   }
 }

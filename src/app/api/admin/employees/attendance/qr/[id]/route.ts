@@ -45,9 +45,9 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     });
 
     return apiSuccess(null, "QR code deactivated");
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error deactivating attendance QR:", error);
-    return apiError(error?.message || "Internal server error", 500);
+    return apiError("Failed to deactivate attendance QR code", 500);
   }
 }
 
@@ -84,8 +84,8 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
     });
 
     return apiSuccess(null, "QR code deleted");
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error deleting attendance QR:", error);
-    return apiError(error?.message || "Internal server error", 500);
+    return apiError("Failed to delete attendance QR code", 500);
   }
 }

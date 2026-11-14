@@ -52,9 +52,9 @@ export async function GET(req: NextRequest) {
       isAlreadyGenerated: Boolean(existing),
       existingRecord: existing,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("GET /api/admin/employees/salary/calculate error:", error);
-    return apiError(error?.message || "Failed to calculate salary preview", 500);
+    return apiError("Failed to calculate salary preview", 500);
   }
 }
 
@@ -129,11 +129,11 @@ export async function POST(req: NextRequest) {
     });
 
     return apiCreated(salary, "Salary generated successfully");
-  } catch (error: any) {
-    if (error?.code === "P2002") {
+  } catch (error: unknown) {
+    if (typeof error === "object" && error !== null && "code" in error && (error as { code: string }).code === "P2002") {
       return apiError("Salary already generated for this staff for this month", 400);
     }
     console.error("POST /api/admin/employees/salary/calculate error:", error);
-    return apiError(error?.message || "Failed to generate salary", 500);
+    return apiError("Failed to generate salary record", 500);
   }
 }

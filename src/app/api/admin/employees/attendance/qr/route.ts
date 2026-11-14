@@ -84,9 +84,9 @@ export async function GET() {
       activeQR,
       history: formattedHistory,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching attendance QR:", error);
-    return apiError(error?.message || "Internal server error", 500);
+    return apiError("Failed to fetch attendance QR details", 500);
   }
 }
 
@@ -164,8 +164,8 @@ export async function POST(req: NextRequest) {
       },
       "QR code generated successfully"
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error generating attendance QR:", error);
-    return apiError(error?.message || "Internal server error", 500);
+    return apiError("Failed to generate attendance QR code", 500);
   }
 }
