@@ -11,8 +11,54 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 
+// Guard against browser extensions (e.g. ad blockers / CORS tools) whose monkey-patched
+// window.fetch breaks on local blob: URLs when Three.js unpacks GLTF embedded textures.
+if (typeof window !== "undefined") {
+  const nativeFetch = window.fetch;
+  window.fetch = function (input: RequestInfo | URL, init?: RequestInit) {
+    const url =
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+        ? input.href
+        : (input as Request).url;
+
+    if (url && (url.startsWith("blob:") || url.startsWith("data:"))) {
+      return new Promise<Response>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", url);
+        xhr.responseType = "blob";
+        xhr.onload = () => {
+          if (xhr.status === 200 || xhr.status === 0) {
+            resolve(new Response(xhr.response));
+          } else {
+            reject(new TypeError(`Failed to load blob URL: ${url}`));
+          }
+        };
+        xhr.onerror = () => {
+          nativeFetch.call(window, input, init).then(resolve, reject);
+        };
+        xhr.send();
+      });
+    }
+
+    return nativeFetch.call(this, input, init);
+  };
+}
+
+const configureGLTF = (loader: any) => {
+  if (loader && typeof loader.register === "function") {
+    loader.register((parser: any) => {
+      if (parser && parser.options) {
+        parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
+      }
+      return { name: "TextureLoaderExtension" };
+    });
+  }
+};
+
 function PorscheMesh() {
-  const { scene } = useGLTF("/model/porsche.glb");
+  const { scene } = useGLTF("/model/porsche.glb", true, true, configureGLTF);
   const modelRef = useRef<THREE.Group>(null);
 
   // Smooth continuous rotation around central vertical axis
@@ -33,7 +79,7 @@ function PorscheMesh() {
 }
 
 // Preload the GLTF asset so it streams immediately
-useGLTF.preload("/model/porsche.glb");
+useGLTF.preload("/model/porsche.glb", true, true, configureGLTF);
 
 export default function CarModel() {
   // CarModel is dynamically imported with ssr: false, so window is available
@@ -75,21 +121,21 @@ export default function CarModel() {
       >
         <Suspense fallback={null}>
           {/* Studio Lighting tuned for rich reflections on metallic paint */}
-          <ambientLight intensity={1.8} />
-          <directionalLight position={[9, 12, 7]} intensity={2.8} />
-          <directionalLight position={[-9, 8, -6]} intensity={1.8} color="#ffffff" />
+          <ambientLight intensity={1.5} />
+          <directionalLight position={[9, 12, 7]} intensity={2.2} />
+          <directionalLight position={[-9, 8, -6]} intensity={1.5} color="#ffffff" />
 
           {/* Crimson-Red Neon Rim Light from Behind */}
           <spotLight
             position={[-7, 5, -7]}
-            intensity={6.0}
+            intensity={5.0}
             color="#E50914"
             angle={0.75}
             penumbra={1}
           />
 
           {/* Overhead Key Fill */}
-          <directionalLight position={[0, 11, 0]} intensity={1.5} />
+          <directionalLight position={[0, 11, 0]} intensity={1.2} />
 
           {/* 3D Car Model */}
           <PorscheMesh />
@@ -104,8 +150,8 @@ export default function CarModel() {
             color="#000000"
           />
 
-          {/* Photorealistic Clear-Coat Reflections */}
-          <Environment preset="city" />
+          {/* Photorealistic Clear-Coat Reflections (Hosted locally in public/ to eliminate external CDN fetch failures) */}
+          <Environment files="/environments/potsdamer_platz_1k.hdr" />
 
           {/* Orbit Controls (Zoom disabled so page scrolling works smoothly) */}
           <OrbitControls
