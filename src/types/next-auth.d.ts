@@ -6,18 +6,26 @@ declare module "next-auth" {
   interface User extends DefaultUser {
     id: string;
     role: UserRole;
-    phone: string;
-    cleanCoins: number;
-    referralCode: string;
+    phone?: string;
+    mobile?: string;
+    cleanCoins?: number;
+    referralCode?: string;
+    type?: "user" | "staff";
+    staffId?: string;
+    salary?: number;
   }
 
   interface Session {
     user: {
       id: string;
       role: UserRole;
-      phone: string;
-      cleanCoins: number;
-      referralCode: string;
+      phone?: string;
+      mobile?: string;
+      cleanCoins?: number;
+      referralCode?: string;
+      type?: "user" | "staff";
+      staffId?: string;
+      salary?: number;
     } & DefaultSession["user"];
   }
 }
@@ -26,8 +34,12 @@ declare module "next-auth/jwt" {
   interface JWT extends DefaultJWT {
     id: string;
     role: UserRole;
-    phone: string;
-    cleanCoins: number;
-    referralCode: string;
+    phone?: string;
+    mobile?: string;
+    cleanCoins?: number;
+    referralCode?: string;
+    type?: "user" | "staff";
+    staffId?: string;
+    salary?: number;
   }
 }

@@ -340,3 +340,52 @@ export const TESTIMONIALS = [
     date: "3 weeks ago",
   },
 ];
+
+// ─── Employee Panel Constants ─────────────────────────────
+
+// Shop Location (from KML file — Rankuva, Gujarat)
+export const SHOP_LOCATION = {
+  latitude: 20.821786,
+  longitude: 73.155642,
+  name: "Patel Car'spa & Detailing Studio",
+};
+
+// Attendance location check radius (in meters)
+// NOTE: Abhi 100m testing ke liye, production me 40m hoga
+export const SHOP_ATTENDANCE_RADIUS_METERS = 100;
+
+// Staff roles dropdown
+export const STAFF_ROLES = [
+  "Manager",
+  "Cashier",
+  "Helper",
+  "Salesman",
+  "Cleaner",
+  "Supervisor",
+] as const;
+
+export type StaffRole = (typeof STAFF_ROLES)[number];
+
+// QR expiry options (Admin QR generate karte waqt)
+export const QR_EXPIRY_OPTIONS = [
+  { label: "1 Day", days: 1 },
+  { label: "7 Days (1 Week)", days: 7 },
+  { label: "15 Days", days: 15 },
+  { label: "30 Days (1 Month)", days: 30 },
+  { label: "90 Days (3 Months)", days: 90 },
+  { label: "180 Days (6 Months)", days: 180 },
+  { label: "365 Days (1 Year)", days: 365 },
+] as const;
+
+// Attendance status display labels
+export const ATTENDANCE_STATUS_LABELS = {
+  PRESENT: "Present",
+  ABSENT: "Absent",
+  HALF_DAY: "Half Day",
+  LEAVE: "Leave",
+  LATE: "Late",
+} as const;
+
+// Late mark time (agar 9:30 AM ke baad aaya to LATE)
+export const LATE_MARK_TIME = "09:30"; // 24-hour format
+

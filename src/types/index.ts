@@ -18,7 +18,7 @@ export type BookingStatus =
   | "completed"
   | "cancelled";
 
-export type UserRole = "customer" | "admin";
+export type UserRole = "customer" | "admin" | "staff";
 
 export type ServiceCategory = "wash" | "detailing" | "bike";
 
@@ -185,3 +185,7 @@ export interface BookingFormData {
   useCleanCoins: boolean;
   couponCode?: string;
 }
+
+// Re-export Employee Panel Staff Types
+export * from "./staff";
+

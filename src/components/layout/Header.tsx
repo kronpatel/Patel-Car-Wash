@@ -16,6 +16,12 @@ import {
   ShieldAlert,
   Calendar,
   ChevronDown,
+  Users,
+  QrCode,
+  ClipboardList,
+  Banknote,
+  CreditCard,
+  FileBarChart,
 } from "lucide-react";
 import CoinBadge from "@/components/ui/CoinBadge";
 import { cn } from "@/lib/utils";
@@ -36,11 +42,30 @@ export default function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Monitor scroll position to apply glassmorphic backdrop
+  // Monitor scroll position with hysteresis & rAF to eliminate header flickering
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollY = window.scrollY;
+          setIsScrolled((prev) => {
+            // Hysteresis dead-band: activate at > 40px, deactivate at < 15px
+            if (!prev && scrollY > 40) return true;
+            if (prev && scrollY < 15) return false;
+            return prev;
+          });
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
+
+    // Check initial position on mount (e.g. page refresh while scrolled)
+    if (window.scrollY > 40) {
+      setIsScrolled(true);
+    }
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -67,14 +92,28 @@ export default function Header() {
 
   const userRole = session?.user?.role;
   const userCoins = session?.user?.cleanCoins ?? 0;
+  const isAttendanceQRActive = pathname === "/admin/employees/attendance";
+  const isAttendanceListActive = pathname === "/admin/employees/attendance/list";
+  const isSalaryActive = pathname?.startsWith("/admin/employees/salary");
+  const isAdvancesActive = pathname?.startsWith("/admin/employees/advances");
+  const isReportsActive = pathname?.startsWith("/admin/employees/reports");
+  const isEmployeesActive =
+    pathname?.startsWith("/admin/employees") &&
+    !isAttendanceQRActive &&
+    !isAttendanceListActive &&
+    !isSalaryActive &&
+    !isAdvancesActive &&
+    !isReportsActive;
+  const isStaffRoute = pathname?.startsWith("/staff");
+  const isAdminActive = pathname === "/admin" || pathname?.startsWith("/admin/promos");
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 w-full transition-all duration-300",
+        "sticky top-0 z-40 w-full border-b py-3.5 sm:py-4 transition-all duration-300",
         isScrolled
-          ? "bg-charcoal-950/90 backdrop-blur-md border-b border-white/10 shadow-lg py-3"
-          : "bg-transparent py-4 sm:py-5"
+          ? "bg-charcoal-950/90 backdrop-blur-md border-white/10 shadow-lg"
+          : "bg-transparent backdrop-blur-none border-transparent shadow-none"
       )}
     >
       <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
@@ -82,50 +121,67 @@ export default function Header() {
           {/* Left: Brand Logo + Desktop Navigation Links */}
           <div className="flex items-center gap-8 lg:gap-10">
             {/* Brand Logo */}
-            <Link href="/" className="flex items-center group bg-transparent shrink-0">
-              <Image
-                src="/logo/logo.svg"
-                alt="Patel Car'spa & Detailing Studio"
-                width={170}
-                height={57}
-                priority
-                className="object-contain h-8 sm:h-10 md:h-12 w-auto max-w-[140px] sm:max-w-[170px] drop-shadow-[0_0_1px_rgba(255,255,255,0.7)] transition-transform group-hover:scale-105"
-              />
-            </Link>
+            {isStaffRoute ? (
+              <span className="flex items-center group bg-transparent shrink-0">
+                <Image
+                  src="/logo/logo.svg"
+                  alt="Patel Car'spa & Detailing Studio"
+                  width={170}
+                  height={57}
+                  priority
+                  className="object-contain h-8 sm:h-10 md:h-12 w-auto max-w-[140px] sm:max-w-[170px] drop-shadow-[0_0_1px_rgba(255,255,255,0.7)] transition-transform group-hover:scale-105"
+                />
+              </span>
+            ) : (
+              <Link href="/" className="flex items-center group bg-transparent shrink-0">
+                <Image
+                  src="/logo/logo.svg"
+                  alt="Patel Car'spa & Detailing Studio"
+                  width={170}
+                  height={57}
+                  priority
+                  className="object-contain h-8 sm:h-10 md:h-12 w-auto max-w-[140px] sm:max-w-[170px] drop-shadow-[0_0_1px_rgba(255,255,255,0.7)] transition-transform group-hover:scale-105"
+                />
+              </Link>
+            )}
 
             {/* Desktop Navigation Links — Left Aligned, Clean & No Pill Container */}
-            <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-              {NAV_LINKS.map((link) => {
-                const isActive = pathname === link.href;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={cn(
-                      "text-sm font-medium transition-colors relative py-1",
-                      isActive
-                        ? "text-neon-blue font-semibold"
-                        : "text-gray-300 hover:text-white"
-                    )}
-                  >
-                    <span>{link.label}</span>
-                    {isActive && (
-                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-neon-blue rounded-full" />
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
+            {!isStaffRoute && (
+              <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+                {NAV_LINKS.map((link) => {
+                  const isActive = pathname === link.href;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={cn(
+                        "text-sm font-medium transition-colors relative py-1",
+                        isActive
+                          ? "text-neon-blue font-semibold"
+                          : "text-gray-300 hover:text-white"
+                      )}
+                    >
+                      <span>{link.label}</span>
+                      {isActive && (
+                        <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-neon-blue rounded-full" />
+                      )}
+                    </Link>
+                  );
+                })}
+              </nav>
+            )}
           </div>
 
           {/* Right Action Cluster (Coins, User / Auth, Book CTA) */}
           <div className="hidden md:flex items-center gap-3">
             {session?.user ? (
               <div className="flex items-center gap-2.5" ref={userMenuRef}>
-                {/* Clean Coins Badge */}
-                <Link href="/dashboard" title="View your Clean Coins rewards">
-                  <CoinBadge coins={userCoins} size="sm" />
-                </Link>
+                {/* Clean Coins Badge (hidden for staff) */}
+                {userRole !== "staff" && (
+                  <Link href="/dashboard" title="View your Clean Coins rewards">
+                    <CoinBadge coins={userCoins} size="sm" />
+                  </Link>
+                )}
 
                 {/* User Dropdown Trigger */}
                 <div className="relative">
@@ -167,7 +223,7 @@ export default function Header() {
                         </div>
 
                         <Link
-                          href="/dashboard"
+                          href={userRole === "staff" ? "/staff/dashboard" : "/dashboard"}
                           className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
                         >
                           <User className="w-4 h-4 text-neon-blue" />
@@ -175,17 +231,96 @@ export default function Header() {
                         </Link>
 
                         {userRole === "admin" && (
-                          <Link
-                            href="/admin"
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gold hover:text-gold-light hover:bg-gold/10 transition-colors"
-                          >
-                            <ShieldAlert className="w-4 h-4 text-gold" />
-                            <span>Owner Admin Panel</span>
-                          </Link>
+                          <>
+                            <Link
+                              href="/admin"
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
+                                isAdminActive
+                                  ? "text-gold bg-gold/15 font-semibold"
+                                  : "text-gold hover:text-gold-light hover:bg-gold/10"
+                              )}
+                            >
+                              <ShieldAlert className="w-4 h-4 text-gold" />
+                              <span>Owner Admin Panel</span>
+                            </Link>
+                            <Link
+                              href="/admin/employees"
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
+                                isEmployeesActive
+                                  ? "text-neon-blue bg-neon-blue/15 font-semibold"
+                                  : "text-gray-300 hover:text-white hover:bg-white/5"
+                              )}
+                            >
+                              <Users className="w-4 h-4 text-neon-blue" />
+                              <span>Employees Hub</span>
+                            </Link>
+                            <Link
+                              href="/admin/employees/attendance"
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
+                                isAttendanceQRActive
+                                  ? "text-gold bg-gold/15 font-semibold"
+                                  : "text-gray-300 hover:text-white hover:bg-white/5"
+                              )}
+                            >
+                              <QrCode className="w-4 h-4 text-gold" />
+                              <span>Attendance QR</span>
+                            </Link>
+                            <Link
+                              href="/admin/employees/attendance/list"
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
+                                isAttendanceListActive
+                                  ? "text-emerald-400 bg-emerald-500/15 font-semibold"
+                                  : "text-gray-300 hover:text-white hover:bg-white/5"
+                              )}
+                            >
+                              <ClipboardList className="w-4 h-4 text-emerald-400" />
+                              <span>Attendance Directory</span>
+                            </Link>
+                            <Link
+                              href="/admin/employees/salary"
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
+                                isSalaryActive
+                                  ? "text-neon-blue bg-neon-blue/15 font-semibold"
+                                  : "text-gray-300 hover:text-white hover:bg-white/5"
+                              )}
+                            >
+                              <Banknote className="w-4 h-4 text-neon-blue" />
+                              <span>Salary & Payroll</span>
+                            </Link>
+                            <Link
+                              href="/admin/employees/advances"
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
+                                isAdvancesActive
+                                  ? "text-gold bg-gold/15 font-semibold"
+                                  : "text-gray-300 hover:text-white hover:bg-white/5"
+                              )}
+                            >
+                              <CreditCard className="w-4 h-4 text-gold" />
+                              <span>Advance Tracker</span>
+                            </Link>
+                            <Link
+                              href="/admin/employees/reports"
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
+                                isReportsActive
+                                  ? "text-purple-400 bg-purple-500/15 font-semibold"
+                                  : "text-gray-300 hover:text-white hover:bg-white/5"
+                              )}
+                            >
+                              <FileBarChart className="w-4 h-4 text-purple-400" />
+                              <span>Reports & Analytics</span>
+                            </Link>
+                          </>
                         )}
 
                         <button
-                          onClick={() => signOut({ callbackUrl: "/" })}
+                          onClick={() => signOut({ callbackUrl: "/login" })}
                           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors text-left"
                         >
                           <LogOut className="w-4 h-4" />
@@ -205,14 +340,16 @@ export default function Header() {
               </Link>
             )}
 
-            {/* Primary Action Button */}
-            <Link
-              href="/book"
-              className="neon-glow-btn px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-neon-sm"
-            >
-              <Calendar className="w-4 h-4" />
-              <span>Book Now</span>
-            </Link>
+            {/* Primary Action Button (hidden for staff) */}
+            {userRole !== "staff" && (
+              <Link
+                href="/book"
+                className="neon-glow-btn px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-neon-sm"
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Book Now</span>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -263,7 +400,9 @@ export default function Header() {
                       {session.user.name}
                     </p>
                   </div>
-                  <CoinBadge coins={userCoins} size="sm" />
+                  {userRole !== "staff" && (
+                    <CoinBadge coins={userCoins} size="sm" />
+                  )}
                 </div>
               )}
 
@@ -286,19 +425,92 @@ export default function Header() {
                 {session?.user && (
                   <>
                     <Link
-                      href="/dashboard"
+                      href={userRole === "staff" ? "/staff/dashboard" : "/dashboard"}
                       className="px-4 py-2.5 rounded-xl text-base font-medium text-gray-300 hover:text-white hover:bg-white/5"
                     >
                       My Dashboard & Bookings
                     </Link>
 
                     {userRole === "admin" && (
-                      <Link
-                        href="/admin"
-                        className="px-4 py-2.5 rounded-xl text-base font-medium text-gold hover:bg-gold/10"
-                      >
-                        Owner Admin Panel
-                      </Link>
+                      <>
+                        <Link
+                          href="/admin"
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
+                            isAdminActive
+                              ? "text-gold bg-gold/15 font-semibold"
+                              : "text-gold hover:bg-gold/10"
+                          )}
+                        >
+                          Owner Admin Panel
+                        </Link>
+                        <Link
+                          href="/admin/employees"
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
+                            isEmployeesActive
+                              ? "text-neon-blue bg-neon-blue/15 font-semibold"
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          Employees Hub
+                        </Link>
+                        <Link
+                          href="/admin/employees/attendance"
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
+                            isAttendanceQRActive
+                              ? "text-gold bg-gold/15 font-semibold"
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          Attendance QR Hub
+                        </Link>
+                        <Link
+                          href="/admin/employees/attendance/list"
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
+                            isAttendanceListActive
+                              ? "text-emerald-400 bg-emerald-500/15 font-semibold"
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          Attendance Directory
+                        </Link>
+                        <Link
+                          href="/admin/employees/salary"
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
+                            isSalaryActive
+                              ? "text-neon-blue bg-neon-blue/15 font-semibold"
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          Salary & Payroll
+                        </Link>
+                        <Link
+                          href="/admin/employees/advances"
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
+                            isAdvancesActive
+                              ? "text-gold bg-gold/15 font-semibold"
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          Advance Tracker
+                        </Link>
+                        <Link
+                          href="/admin/employees/reports"
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
+                            isReportsActive
+                              ? "text-purple-400 bg-purple-500/15 font-semibold"
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          Reports & Analytics
+                        </Link>
+                      </>
                     )}
                   </>
                 )}
@@ -314,7 +526,7 @@ export default function Header() {
 
                 {session?.user ? (
                   <button
-                    onClick={() => signOut({ callbackUrl: "/" })}
+                    onClick={() => signOut({ callbackUrl: "/login" })}
                     className="w-full py-2.5 text-center text-sm text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
                   >
                     Sign Out
