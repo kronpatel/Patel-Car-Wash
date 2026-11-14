@@ -20,17 +20,22 @@ export interface RateLimitResult {
 // In-memory store (Map)
 const store = new Map<string, RateLimitRecord>();
 
+const DEFAULT_WINDOW_MS =
+  typeof process !== "undefined" && process.env?.RATE_LIMIT_WINDOW_MS
+    ? parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 15 * 60 * 1000
+    : 15 * 60 * 1000;
+
 /**
  * Check and record a rate limit attempt for a unique key (e.g. IP + endpoint)
  * @param key Unique identifier (e.g., "scan:192.168.1.1")
  * @param limit Maximum allowed attempts within window (default: 5)
- * @param windowMs Time window in milliseconds (default: 15 minutes = 900,000ms)
+ * @param windowMs Time window in milliseconds (default: 15 minutes = 900,000ms or RATE_LIMIT_WINDOW_MS)
  * @returns { success: boolean, limit: number, remaining: number, retryAfter: number, resetTime: number }
  */
 export function checkRateLimit(
   key: string,
   limit: number = 5,
-  windowMs: number = 15 * 60 * 1000 // 15 minutes default
+  windowMs: number = DEFAULT_WINDOW_MS
 ): RateLimitResult {
   const now = Date.now();
 

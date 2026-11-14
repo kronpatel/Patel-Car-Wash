@@ -79,6 +79,16 @@ function LoginForm() {
         return;
       }
 
+      // Check for rate limiting (429 status or "Too many" error message)
+      if (
+        res.status === 429 ||
+        (typeof res.error === "string" && res.error.includes("Too many"))
+      ) {
+        setErrorMessage("Too many failed attempts. Please wait 15 minutes.");
+        setIsLoading(false);
+        return;
+      }
+
       if (res.error) {
         setErrorMessage(res.error);
         setIsLoading(false);
@@ -88,8 +98,16 @@ function LoginForm() {
         setJustSignedIn(true);
         router.refresh();
       }
-    } catch {
-      setErrorMessage("Authentication failed. Please check your network.");
+    } catch (err: any) {
+      if (
+        err?.status === 429 ||
+        (typeof err?.message === "string" &&
+          (err.message.includes("429") || err.message.includes("Too many")))
+      ) {
+        setErrorMessage("Too many failed attempts. Please wait 15 minutes.");
+      } else {
+        setErrorMessage("Authentication failed. Please check your network.");
+      }
       setIsLoading(false);
     }
   };

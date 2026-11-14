@@ -14,7 +14,11 @@ export async function middleware(req: NextRequest) {
   ) {
     const ip = getClientIp(req);
     const rateKey = `rate:${ip}:${pathname}`;
-    const rateLimit = checkRateLimit(rateKey, 5, 15 * 60 * 1000); // 5 attempts per 15 min per IP
+    const windowMs =
+      typeof process !== "undefined" && process.env?.RATE_LIMIT_WINDOW_MS
+        ? parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 15 * 60 * 1000
+        : 15 * 60 * 1000;
+    const rateLimit = checkRateLimit(rateKey, 5, windowMs); // 5 attempts per window per IP
 
     if (!rateLimit.success) {
       const minutes = Math.max(1, Math.ceil(rateLimit.retryAfter / 60));

@@ -31,9 +31,13 @@ export const authOptions: NextAuthOptions = {
         const normalizedEmail = identifier.toLowerCase();
         const cleanMobile = identifier.replace(/[\s\-\+]/g, "").replace(/^91/, "");
 
-        // Brute-force protection: Max 5 failed attempts per 15 minutes per account
+        // Brute-force protection: Max 5 failed attempts per window per account
         const accountRateKey = `login-account:${normalizedEmail || cleanMobile || identifier}`;
-        const accountRateLimit = checkRateLimit(accountRateKey, 5, 15 * 60 * 1000);
+        const rateLimitWindowMs =
+          typeof process !== "undefined" && process.env?.RATE_LIMIT_WINDOW_MS
+            ? parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 15 * 60 * 1000
+            : 15 * 60 * 1000;
+        const accountRateLimit = checkRateLimit(accountRateKey, 5, rateLimitWindowMs);
         if (!accountRateLimit.success) {
           const mins = Math.max(1, Math.ceil(accountRateLimit.retryAfter / 60));
           throw new Error(`Too many failed login attempts. Please try again after ${mins} minutes.`);
