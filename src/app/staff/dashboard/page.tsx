@@ -3,7 +3,7 @@
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { LogOut, User, Shield, Phone, Mail, Sparkles, Loader2 } from "lucide-react";
+import { LogOut, User, Shield, Phone, Mail, Sparkles, Loader2, IndianRupee } from "lucide-react";
 
 export default function StaffDashboard() {
   const { data: session, status } = useSession();
@@ -55,7 +55,7 @@ export default function StaffDashboard() {
           <div className="p-6 md:p-8 rounded-2xl bg-charcoal-850 border border-white/10 shadow-xl">
             <div className="flex items-start justify-between flex-wrap gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-neon-blue/10 border border-neon-blue/20 flex items-center justify-center text-neon-blue font-bold text-xl">
+                <div className="w-14 h-14 rounded-lg bg-neon-blue/10 border border-neon-blue/20 flex items-center justify-center text-neon-blue font-bold text-xl">
                   {staffUser?.name ? staffUser.name.charAt(0).toUpperCase() : "S"}
                 </div>
                 <div>
@@ -76,10 +76,12 @@ export default function StaffDashboard() {
                 </div>
               </div>
 
-              {/* Status Badge */}
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                Logged In
+              {/* Monthly Salary */}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gold/10 text-gold border border-gold/20 text-xs font-semibold font-mono">
+                <IndianRupee className="w-3 h-3 shrink-0" />
+                <span>
+                  ₹{Number(staffUser?.salary || 0).toLocaleString("en-IN")} / month
+                </span>
               </div>
             </div>
 

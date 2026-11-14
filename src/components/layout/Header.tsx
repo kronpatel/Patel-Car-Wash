@@ -125,10 +125,12 @@ export default function Header() {
           <div className="hidden md:flex items-center gap-3">
             {session?.user ? (
               <div className="flex items-center gap-2.5" ref={userMenuRef}>
-                {/* Clean Coins Badge */}
-                <Link href="/dashboard" title="View your Clean Coins rewards">
-                  <CoinBadge coins={userCoins} size="sm" />
-                </Link>
+                {/* Clean Coins Badge (hidden for staff) */}
+                {userRole !== "staff" && (
+                  <Link href="/dashboard" title="View your Clean Coins rewards">
+                    <CoinBadge coins={userCoins} size="sm" />
+                  </Link>
+                )}
 
                 {/* User Dropdown Trigger */}
                 <div className="relative">
@@ -170,7 +172,7 @@ export default function Header() {
                         </div>
 
                         <Link
-                          href="/dashboard"
+                          href={userRole === "staff" ? "/staff/dashboard" : "/dashboard"}
                           className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
                         >
                           <User className="w-4 h-4 text-neon-blue" />
@@ -227,14 +229,16 @@ export default function Header() {
               </Link>
             )}
 
-            {/* Primary Action Button */}
-            <Link
-              href="/book"
-              className="neon-glow-btn px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-neon-sm"
-            >
-              <Calendar className="w-4 h-4" />
-              <span>Book Now</span>
-            </Link>
+            {/* Primary Action Button (hidden for staff) */}
+            {userRole !== "staff" && (
+              <Link
+                href="/book"
+                className="neon-glow-btn px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-neon-sm"
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Book Now</span>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -285,7 +289,9 @@ export default function Header() {
                       {session.user.name}
                     </p>
                   </div>
-                  <CoinBadge coins={userCoins} size="sm" />
+                  {userRole !== "staff" && (
+                    <CoinBadge coins={userCoins} size="sm" />
+                  )}
                 </div>
               )}
 
@@ -308,7 +314,7 @@ export default function Header() {
                 {session?.user && (
                   <>
                     <Link
-                      href="/dashboard"
+                      href={userRole === "staff" ? "/staff/dashboard" : "/dashboard"}
                       className="px-4 py-2.5 rounded-xl text-base font-medium text-gray-300 hover:text-white hover:bg-white/5"
                     >
                       My Dashboard & Bookings

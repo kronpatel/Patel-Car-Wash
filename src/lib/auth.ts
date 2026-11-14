@@ -93,6 +93,7 @@ export const authOptions: NextAuthOptions = {
             staffId: staff.staffId,
             cleanCoins: 0,
             referralCode: "",
+            salary: staff.baseSalary,
           };
         }
 
@@ -111,6 +112,7 @@ export const authOptions: NextAuthOptions = {
         token.type = user.type;
         token.staffId = user.staffId;
         token.mobile = user.mobile;
+        token.salary = user.salary;
       }
 
       // Handle session updates (e.g. coin balance update)
@@ -132,6 +134,7 @@ export const authOptions: NextAuthOptions = {
         session.user.type = token.type;
         if (token.staffId) session.user.staffId = token.staffId;
         if (token.mobile) session.user.mobile = token.mobile;
+        if (token.salary !== undefined) session.user.salary = token.salary as number;
       }
       return session;
     },

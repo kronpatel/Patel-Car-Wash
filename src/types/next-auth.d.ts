@@ -12,6 +12,7 @@ declare module "next-auth" {
     referralCode?: string;
     type?: "user" | "staff";
     staffId?: string;
+    salary?: number;
   }
 
   interface Session {
@@ -24,6 +25,7 @@ declare module "next-auth" {
       referralCode?: string;
       type?: "user" | "staff";
       staffId?: string;
+      salary?: number;
     } & DefaultSession["user"];
   }
 }
@@ -38,5 +40,6 @@ declare module "next-auth/jwt" {
     referralCode?: string;
     type?: "user" | "staff";
     staffId?: string;
+    salary?: number;
   }
 }
