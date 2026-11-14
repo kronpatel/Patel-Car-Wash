@@ -18,6 +18,10 @@ import {
   ChevronDown,
   Users,
   QrCode,
+  ClipboardList,
+  Banknote,
+  CreditCard,
+  FileBarChart,
 } from "lucide-react";
 import CoinBadge from "@/components/ui/CoinBadge";
 import { cn } from "@/lib/utils";
@@ -69,9 +73,18 @@ export default function Header() {
 
   const userRole = session?.user?.role;
   const userCoins = session?.user?.cleanCoins ?? 0;
-  const isAttendanceActive = pathname === "/admin/employees/attendance";
+  const isAttendanceQRActive = pathname === "/admin/employees/attendance";
+  const isAttendanceListActive = pathname === "/admin/employees/attendance/list";
+  const isSalaryActive = pathname?.startsWith("/admin/employees/salary");
+  const isAdvancesActive = pathname?.startsWith("/admin/employees/advances");
+  const isReportsActive = pathname?.startsWith("/admin/employees/reports");
   const isEmployeesActive =
-    pathname?.startsWith("/admin/employees") && !isAttendanceActive;
+    pathname?.startsWith("/admin/employees") &&
+    !isAttendanceQRActive &&
+    !isAttendanceListActive &&
+    !isSalaryActive &&
+    !isAdvancesActive &&
+    !isReportsActive;
   const isStaffRoute = pathname?.startsWith("/staff");
   const isAdminActive = pathname === "/admin" || pathname?.startsWith("/admin/promos");
 
@@ -228,13 +241,61 @@ export default function Header() {
                               href="/admin/employees/attendance"
                               className={cn(
                                 "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
-                                isAttendanceActive
+                                isAttendanceQRActive
                                   ? "text-gold bg-gold/15 font-semibold"
                                   : "text-gray-300 hover:text-white hover:bg-white/5"
                               )}
                             >
                               <QrCode className="w-4 h-4 text-gold" />
                               <span>Attendance QR</span>
+                            </Link>
+                            <Link
+                              href="/admin/employees/attendance/list"
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
+                                isAttendanceListActive
+                                  ? "text-emerald-400 bg-emerald-500/15 font-semibold"
+                                  : "text-gray-300 hover:text-white hover:bg-white/5"
+                              )}
+                            >
+                              <ClipboardList className="w-4 h-4 text-emerald-400" />
+                              <span>Attendance Directory</span>
+                            </Link>
+                            <Link
+                              href="/admin/employees/salary"
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
+                                isSalaryActive
+                                  ? "text-neon-blue bg-neon-blue/15 font-semibold"
+                                  : "text-gray-300 hover:text-white hover:bg-white/5"
+                              )}
+                            >
+                              <Banknote className="w-4 h-4 text-neon-blue" />
+                              <span>Salary & Payroll</span>
+                            </Link>
+                            <Link
+                              href="/admin/employees/advances"
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
+                                isAdvancesActive
+                                  ? "text-gold bg-gold/15 font-semibold"
+                                  : "text-gray-300 hover:text-white hover:bg-white/5"
+                              )}
+                            >
+                              <CreditCard className="w-4 h-4 text-gold" />
+                              <span>Advance Tracker</span>
+                            </Link>
+                            <Link
+                              href="/admin/employees/reports"
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors",
+                                isReportsActive
+                                  ? "text-purple-400 bg-purple-500/15 font-semibold"
+                                  : "text-gray-300 hover:text-white hover:bg-white/5"
+                              )}
+                            >
+                              <FileBarChart className="w-4 h-4 text-purple-400" />
+                              <span>Reports & Analytics</span>
                             </Link>
                           </>
                         )}
@@ -379,12 +440,56 @@ export default function Header() {
                           href="/admin/employees/attendance"
                           className={cn(
                             "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
-                            isAttendanceActive
+                            isAttendanceQRActive
                               ? "text-gold bg-gold/15 font-semibold"
                               : "text-gray-300 hover:text-white hover:bg-white/5"
                           )}
                         >
                           Attendance QR Hub
+                        </Link>
+                        <Link
+                          href="/admin/employees/attendance/list"
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
+                            isAttendanceListActive
+                              ? "text-emerald-400 bg-emerald-500/15 font-semibold"
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          Attendance Directory
+                        </Link>
+                        <Link
+                          href="/admin/employees/salary"
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
+                            isSalaryActive
+                              ? "text-neon-blue bg-neon-blue/15 font-semibold"
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          Salary & Payroll
+                        </Link>
+                        <Link
+                          href="/admin/employees/advances"
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
+                            isAdvancesActive
+                              ? "text-gold bg-gold/15 font-semibold"
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          Advance Tracker
+                        </Link>
+                        <Link
+                          href="/admin/employees/reports"
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-base font-medium transition-colors",
+                            isReportsActive
+                              ? "text-purple-400 bg-purple-500/15 font-semibold"
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          Reports & Analytics
                         </Link>
                       </>
                     )}

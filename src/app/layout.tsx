@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "@/components/providers/AuthProvider";
 import Header from "@/components/layout/Header";
@@ -8,19 +7,6 @@ import SplashScreen from "@/components/ui/SplashScreen";
 import WhatsAppFloatingBtn from "@/components/ui/WhatsAppFloatingBtn";
 import { Toaster } from "sonner";
 import { SHOP_CONFIG } from "@/lib/constants";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const poppins = Poppins({
-  weight: ["400", "500", "600", "700", "800"],
-  subsets: ["latin"],
-  variable: "--font-poppins",
-  display: "swap",
-});
 
 export const viewport: Viewport = {
   themeColor: "#0f0f12",
@@ -94,7 +80,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${poppins.variable} font-sans bg-charcoal-900 text-gray-100 antialiased w-full min-h-screen overflow-x-hidden flex flex-col justify-between selection:bg-neon-blue/30 selection:text-neon-blue`}
+        className="font-sans bg-charcoal-900 text-gray-100 antialiased w-full min-h-screen overflow-x-hidden flex flex-col justify-between selection:bg-neon-blue/30 selection:text-neon-blue"
       >
         <AuthProvider>
           <Toaster richColors position="top-right" theme="dark" />
