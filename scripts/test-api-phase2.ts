@@ -12,11 +12,13 @@
  *   npx tsx scripts/test-api-phase2.ts "next-auth.session-token=YOUR_COOKIE_HERE"
  */
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 import fs from "fs";
 import path from "path";
 import { prisma } from "../src/lib/prisma";
 
-const BASE_URL = process.env.BASE_URL || "http://localhost:3002";
+const BASE_URL = process.env.BASE_URL || "https://localhost:3002";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@cleanpro.com";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "CleanProAdmin@2024!";
 const TEST_MOBILE = "9876543210";

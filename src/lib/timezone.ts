@@ -93,6 +93,24 @@ export function getTodayDateIST(date: Date = new Date()): Date {
 }
 
 /**
+ * Format a Date to YYYY-MM-DD in IST timezone.
+ */
+export function getISTDateString(date: Date = new Date()): string {
+  return date.toLocaleDateString("en-CA", { timeZone: IST_TIMEZONE });
+}
+
+/**
+ * Parse a "YYYY-MM-DD" date string into a normalized UTC start of day Date (00:00:00.000Z).
+ * Falls back to today's date in IST if invalid or not provided.
+ */
+export function parseDateStringIST(dateStr?: string | null): Date {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return getTodayDateIST();
+  }
+  return new Date(`${dateStr}T00:00:00.000Z`);
+}
+
+/**
  * Format a Date object to IST 12-hour time string (e.g. "09:15 AM").
  */
 export function formatISTTime(

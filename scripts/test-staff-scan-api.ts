@@ -14,6 +14,8 @@
  *   npx tsx scripts/test-staff-scan-api.ts
  */
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
@@ -21,7 +23,7 @@ import { prisma } from "../src/lib/prisma";
 import { STUDIO_COORDINATES } from "../src/lib/constants";
 import { getDistanceInMeters } from "../src/lib/location";
 
-const BASE_URL = process.env.BASE_URL || "http://localhost:3002";
+const BASE_URL = process.env.BASE_URL || "https://localhost:3002";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@cleanpro.com";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "CleanProAdmin@2024!";
 
