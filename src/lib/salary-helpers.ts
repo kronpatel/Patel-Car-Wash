@@ -1,4 +1,7 @@
 import { prisma } from "@/lib/prisma";
+import type { PrismaClient, Prisma } from "@prisma/client";
+
+type PrismaExecutor = PrismaClient | Prisma.TransactionClient;
 
 export interface AutoSalaryCalculation {
   staffId: string;
@@ -136,18 +139,22 @@ export async function calculateAutoSalary(
 
 /**
  * 2. Recover advance by deducting from OPEN advances (oldest first)
- * Updates advance amountRecovered, remainingBalance and marks CLOSED if fully recovered
+ * Updates advance amountRecovered, remainingBalance and marks CLOSED if fully recovered.
+ * Supports executing inside an atomic transaction when tx client is passed.
  */
 export async function recoverAdvance(
   staffId: string,
-  amount: number
+  amount: number,
+  tx?: PrismaExecutor
 ): Promise<{ recoveredTotal: number; closedCount: number }> {
   if (amount <= 0) {
     return { recoveredTotal: 0, closedCount: 0 };
   }
 
+  const client = tx || prisma;
+
   // Find OPEN advances ordered by date ascending (oldest first)
-  const openAdvances = await prisma.advance.findMany({
+  const openAdvances = await client.advance.findMany({
     where: {
       staffId,
       status: "OPEN",
@@ -169,7 +176,7 @@ export async function recoverAdvance(
     const newRemaining = Math.round((adv.remainingBalance - deduct) * 100) / 100;
     const isClosed = newRemaining <= 0;
 
-    await prisma.advance.update({
+    await client.advance.update({
       where: { id: adv.id },
       data: {
         amountRecovered: newRecovered,
@@ -190,7 +197,9 @@ export async function recoverAdvance(
 }
 
 /**
- * 3. Generate salary record in database with optional manual overrides
+ * 3. Generate salary record in database with optional manual overrides.
+ * Executes both advance recovery and salary creation inside an atomic prisma.$transaction
+ * to ensure that any failure during salary creation automatically rolls back the advance deduction.
  */
 export async function generateSalaryRecord(
   staffId: string,
@@ -217,40 +226,45 @@ export async function generateSalaryRecord(
       overrides?.bonus !== undefined ||
       overrides?.deduction !== undefined);
 
-  // If advance cut applied, deduct from OPEN advances
-  if (advanceCut > 0) {
-    await recoverAdvance(autoSalary.staffId, advanceCut);
-  }
+  // Atomic execution: Wrap advance deduction and salary slip creation in a single transaction
+  const salary = await prisma.$transaction(async (tx) => {
+    // If advance cut applied, deduct from OPEN advances inside the transaction
+    if (advanceCut > 0) {
+      await recoverAdvance(autoSalary.staffId, advanceCut, tx);
+    }
 
-  const salary = await prisma.salary.create({
-    data: {
-      staffId: autoSalary.staffId,
-      month,
-      year,
-      baseSalary: autoSalary.baseSalary,
-      presentDays: Math.round(autoSalary.totalAttendedDays),
-      absentDays: autoSalary.absentDays,
-      advanceCut,
-      deduction,
-      bonus,
-      finalSalary,
-      paymentDate: overrides?.markPaid ? new Date() : null,
-      paymentMode: overrides?.markPaid ? overrides.paymentMode || "CASH" : null,
-      isManual,
-      remark: overrides?.remark?.trim() || null,
-    },
-    include: {
-      staff: {
-        select: {
-          id: true,
-          staffId: true,
-          name: true,
-          role: true,
-          photo: true,
-          mobile: true,
+    const createdSalary = await tx.salary.create({
+      data: {
+        staffId: autoSalary.staffId,
+        month,
+        year,
+        baseSalary: autoSalary.baseSalary,
+        presentDays: Math.round(autoSalary.totalAttendedDays),
+        absentDays: autoSalary.absentDays,
+        advanceCut,
+        deduction,
+        bonus,
+        finalSalary,
+        paymentDate: overrides?.markPaid ? new Date() : null,
+        paymentMode: overrides?.markPaid ? overrides.paymentMode || "CASH" : null,
+        isManual,
+        remark: overrides?.remark?.trim() || null,
+      },
+      include: {
+        staff: {
+          select: {
+            id: true,
+            staffId: true,
+            name: true,
+            role: true,
+            photo: true,
+            mobile: true,
+          },
         },
       },
-    },
+    });
+
+    return createdSalary;
   });
 
   return salary;
