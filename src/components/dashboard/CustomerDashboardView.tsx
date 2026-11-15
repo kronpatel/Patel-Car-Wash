@@ -67,8 +67,11 @@ export default function CustomerDashboardView({
   };
 
   const handleStatusChange = (updated: IBooking) => {
+    const updatedId = updated.id || updated._id || updated.bookingId;
     setBookings((prev) =>
-      prev.map((b) => (b._id === updated._id ? updated : b))
+      prev.map((b) =>
+        (b.id || b._id || b.bookingId) === updatedId ? updated : b
+      )
     );
   };
 
@@ -242,7 +245,7 @@ export default function CustomerDashboardView({
 
               {upcomingBookings.map((b) => (
                 <HistoryRow
-                  key={b._id}
+                  key={b.id || b._id || b.bookingId}
                   booking={b}
                   onStatusChange={handleStatusChange}
                   onShowQrPass={(b) => setActiveQrBooking(b)}
@@ -289,7 +292,7 @@ export default function CustomerDashboardView({
 
               {pastBookings.map((b) => (
                 <HistoryRow
-                  key={b._id}
+                  key={b.id || b._id || b.bookingId}
                   booking={b}
                   onStatusChange={handleStatusChange}
                   onShowQrPass={(b) => setActiveQrBooking(b)}

@@ -69,7 +69,8 @@ export default function BookingCard({
     setCancelError("");
 
     try {
-      const res = await fetch(`/api/bookings/${booking._id}`, {
+      const bookingIdentifier = booking.id || booking._id || booking.bookingId;
+      const res = await fetch(`/api/bookings/${bookingIdentifier}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "cancelled" }),
