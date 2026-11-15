@@ -38,8 +38,28 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const secret =
+    process.env.NEXTAUTH_SECRET ||
+    (process.env.NODE_ENV === "production"
+      ? undefined
+      : "dev-only-secret-do-not-use-in-prod");
+  const token = await getToken({ req, secret });
   const role = (token?.role as string | undefined) || "";
+
+  // ─── Protect /api/admin (SEC-001) ───
+  // Gateway defense: Block non-admin calls before executing route handlers
+  if (pathname.startsWith("/api/admin")) {
+    if (!token || role !== "admin") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Unauthorized: Admin access required.",
+        },
+        { status: 401 }
+      );
+    }
+    return NextResponse.next();
+  }
 
   // ─── Protect /staff (Except public attendance scan) ───
   // Only staff may enter protected staff routes. Customers/admins are bounced.
@@ -83,6 +103,7 @@ export const config = {
   matcher: [
     "/staff/:path*",
     "/admin/:path*",
+    "/api/admin/:path*",
     "/api/staff/scan",
     "/api/auth/callback/:path*",
   ],

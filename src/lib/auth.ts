@@ -10,6 +10,16 @@ const credentialsProvider =
     ? CredentialsProvider
     : (CredentialsProvider as any).default;
 
+// Enforce NEXTAUTH_SECRET validation (SEC-002: Disallow hardcoded fallback in production)
+const nextAuthSecret = process.env.NEXTAUTH_SECRET;
+if (!nextAuthSecret) {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("FATAL: NEXTAUTH_SECRET environment variable is required in production.");
+  }
+  console.warn("⚠️ WARNING: NEXTAUTH_SECRET missing. Using development fallback.");
+}
+const secret = nextAuthSecret || "dev-only-secret-do-not-use-in-prod";
+
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
@@ -162,5 +172,5 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
     error: "/login",
   },
-  secret: process.env.NEXTAUTH_SECRET || "cleanpro_super_secure_jwt_secret_change_me_in_prod_123456789",
+  secret,
 };

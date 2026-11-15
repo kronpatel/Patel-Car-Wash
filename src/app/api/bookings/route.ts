@@ -170,7 +170,43 @@ export async function POST(req: Request) {
     let coinsUsed = 0;
 
     // 2. Handle Clean Coins Loyalty Redemption (Min 50 coins; Max 50% discount)
-    if (useCleanCoins && user.cleanCoins >= LOYALTY_RULES.MIN_COINS_TO_REDEEM) {
+    const requestedCoins =
+      typeof body.coinsUsed === "number" && body.coinsUsed > 0
+        ? body.coinsUsed
+        : 0;
+
+    if (requestedCoins > 0) {
+      if (requestedCoins < LOYALTY_RULES.MIN_COINS_TO_REDEEM) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Insufficient CleanCoins. Minimum ${LOYALTY_RULES.MIN_COINS_TO_REDEEM} coins required to redeem.`,
+          },
+          { status: 400 }
+        );
+      }
+      const maxDiscountFromCoins = Math.floor(basePrice * 0.5);
+      const requestedValue = calculateCoinsDiscount(requestedCoins);
+      if (requestedValue > maxDiscountFromCoins) {
+        coinsUsed = Math.floor(
+          maxDiscountFromCoins / LOYALTY_RULES.COIN_REDEMPTION_VALUE
+        );
+        discount += maxDiscountFromCoins;
+      } else {
+        coinsUsed = requestedCoins;
+        discount += requestedValue;
+      }
+    } else if (useCleanCoins) {
+      if (user.cleanCoins < LOYALTY_RULES.MIN_COINS_TO_REDEEM) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Insufficient CleanCoins. Minimum ${LOYALTY_RULES.MIN_COINS_TO_REDEEM} coins required to redeem.`,
+          },
+          { status: 400 }
+        );
+      }
+
       const maxDiscountFromCoins = Math.floor(basePrice * 0.5);
       const coinsAvailableValue = calculateCoinsDiscount(user.cleanCoins);
 
@@ -285,7 +321,30 @@ export async function POST(req: Request) {
 
       try {
         createdBooking = await prisma.$transaction(async (tx) => {
-          // Create Booking in MySQL
+          // 1. Conditional update: only deduct if coins >= coinsUsed (Atomic check to prevent race conditions)
+          if (coinsUsed > 0) {
+            try {
+              await tx.user.update({
+                where: {
+                  id: user.id,
+                  cleanCoins: { gte: coinsUsed },
+                },
+                data: {
+                  cleanCoins: { decrement: coinsUsed },
+                },
+              });
+            } catch (err: any) {
+              if (
+                err?.code === "P2025" ||
+                err?.message?.includes("Record to update not found")
+              ) {
+                throw new Error("INSUFFICIENT_CLEAN_COINS");
+              }
+              throw err;
+            }
+          }
+
+          // 2. Create Booking in MySQL
           const newBooking = await tx.booking.create({
             data: {
               bookingId,
@@ -310,13 +369,8 @@ export async function POST(req: Request) {
             },
           });
 
-          // Deduct Clean Coins if used
+          // 3. Create CoinTransaction record
           if (coinsUsed > 0) {
-            await tx.user.update({
-              where: { id: user.id },
-              data: { cleanCoins: { decrement: coinsUsed } },
-            });
-
             await tx.coinTransaction.create({
               data: {
                 userId: user.id,
@@ -328,7 +382,7 @@ export async function POST(req: Request) {
             });
           }
 
-          // Record promo code usage if applied
+          // 4. Record promo code usage if applied
           if (appliedPromo) {
             await tx.promoCodeUsage.create({
               data: {
@@ -403,6 +457,15 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
+    if (error instanceof Error && error.message === "INSUFFICIENT_CLEAN_COINS") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Insufficient CleanCoins. You do not have enough coins or they were already redeemed.",
+        },
+        { status: 400 }
+      );
+    }
     console.error("POST /api/bookings error:", error);
     return NextResponse.json(
       {
