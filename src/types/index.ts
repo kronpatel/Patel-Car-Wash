@@ -39,7 +39,8 @@ export interface IUser {
 
 // Booking Interface
 export interface IBooking {
-  _id: string;
+  id?: string;
+  _id?: string;
   bookingId: string;
   userId: string | IUser;
   customerName: string;

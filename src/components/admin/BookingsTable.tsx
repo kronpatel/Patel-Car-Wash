@@ -61,11 +61,12 @@ export default function BookingsTable({
 
   // Step 1: Mark Ready (Triggers WhatsApp notification #2)
   const handleMarkReady = async (booking: IBooking) => {
-    setLoadingActionId(booking._id);
+    const bookingIdentifier = booking.id || booking._id || booking.bookingId;
+    setLoadingActionId(bookingIdentifier);
     setActionNotice(null);
 
     try {
-      const res = await fetch(`/api/bookings/${booking._id}/complete`, {
+      const res = await fetch(`/api/bookings/${bookingIdentifier}/complete`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "ready" }),
@@ -84,7 +85,9 @@ export default function BookingsTable({
           type: "success",
         });
         setBookings((prev) =>
-          prev.map((b) => (b._id === booking._id ? data.booking : b))
+          prev.map((b) =>
+            (b.id || b._id || b.bookingId) === bookingIdentifier ? data.booking : b
+          )
         );
       }
     } catch {
@@ -96,11 +99,12 @@ export default function BookingsTable({
 
   // Step 2: Mark Completed (Credits Clean Coins to customer)
   const handleMarkCompleted = async (booking: IBooking) => {
-    setLoadingActionId(booking._id);
+    const bookingIdentifier = booking.id || booking._id || booking.bookingId;
+    setLoadingActionId(bookingIdentifier);
     setActionNotice(null);
 
     try {
-      const res = await fetch(`/api/bookings/${booking._id}/complete`, {
+      const res = await fetch(`/api/bookings/${bookingIdentifier}/complete`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "completed" }),
@@ -119,7 +123,9 @@ export default function BookingsTable({
           type: "success",
         });
         setBookings((prev) =>
-          prev.map((b) => (b._id === booking._id ? data.booking : b))
+          prev.map((b) =>
+            (b.id || b._id || b.bookingId) === bookingIdentifier ? data.booking : b
+          )
         );
       }
     } catch {
@@ -131,11 +137,12 @@ export default function BookingsTable({
 
   // Move directly to In Progress
   const handleMoveToBay = async (booking: IBooking) => {
-    setLoadingActionId(booking._id);
+    const bookingIdentifier = booking.id || booking._id || booking.bookingId;
+    setLoadingActionId(bookingIdentifier);
     setActionNotice(null);
 
     try {
-      const res = await fetch(`/api/bookings/${booking._id}`, {
+      const res = await fetch(`/api/bookings/${bookingIdentifier}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "in_progress" }),
@@ -154,7 +161,9 @@ export default function BookingsTable({
           type: "success",
         });
         setBookings((prev) =>
-          prev.map((b) => (b._id === booking._id ? data.booking : b))
+          prev.map((b) =>
+            (b.id || b._id || b.bookingId) === bookingIdentifier ? data.booking : b
+          )
         );
       }
     } catch {
@@ -283,12 +292,13 @@ export default function BookingsTable({
             <tbody className="divide-y divide-white/5">
               {filteredBookings.length > 0 ? (
                 filteredBookings.map((b) => {
-                  const isActionLoading = loadingActionId === b._id;
+                  const bookingIdentifier = b.id || b._id || b.bookingId;
+                  const isActionLoading = loadingActionId === bookingIdentifier;
                   const rawWaPhone = b.customerPhone.replace(/[^0-9]/g, "");
 
                   return (
                     <tr
-                      key={b._id}
+                      key={bookingIdentifier}
                       className="hover:bg-white/[0.02] transition-colors"
                     >
                       {/* Booking ID & Plan */}
