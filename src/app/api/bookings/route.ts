@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { calculatePlanPrice, calculateCoinsDiscount } from "@/lib/utils";
 import { LOYALTY_RULES, VEHICLE_TYPES, TIME_SLOTS } from "@/lib/constants";
 import { sendBookingConfirmationWhatsApp } from "@/lib/whatsapp";
+import { getNextBookingId } from "@/lib/bookingId";
 import { PlanType, VehicleType } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -258,90 +259,116 @@ export async function POST(req: Request) {
 
     const finalPrice = Math.max(basePrice - discount, 99);
 
-    // 4. Generate Unique Sequential Booking ID: CW-YYYY-XXXX
-    const currentYear = new Date().getFullYear();
-    const countThisYear = await prisma.booking.count({
-      where: { bookingId: { startsWith: `CW-${currentYear}-` } },
-    });
-    const bookingId = `CW-${currentYear}-${String(countThisYear + 1).padStart(4, "0")}`;
+    // 4, 5 & 6. Generate Unique Sequential Booking ID and Atomically Create Booking
+    // Uses max-sequence detection and collision retry to prevent duplicate key crashes (P2002)
+    const maxRetries = 3;
+    let createdBooking: any = null;
 
-    // 5. Generate QR Code Data URL
-    const qrPayload = JSON.stringify({
-      customer: user.name,
-      vehicle: `${vehicleType} (${vehicleNumber.toUpperCase()})`,
-      bookingId,
-      finalPrice,
-    });
-    const qrCode = await QRCode.toDataURL(qrPayload, {
-      margin: 2,
-      width: 256,
-      color: {
-        dark: "#0F0F12",
-        light: "#FFFFFF",
-      },
-    });
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      const bookingId = await getNextBookingId();
 
-    // 6. Atomic Execution via Prisma Transaction
-    const booking = await prisma.$transaction(async (tx) => {
-      // Create Booking in MySQL
-      const createdBooking = await tx.booking.create({
-        data: {
-          bookingId,
-          userId: user.id,
-          customerName: user.name,
-          customerPhone: user.phone,
-          customerEmail: user.email,
-          service,
-          plan,
-          vehicleType,
-          vehicleNumber: vehicleNumber.toUpperCase().trim(),
-          date,
-          timeSlot,
-          address: address?.trim() || null,
-          notes: notes?.trim() || null,
-          basePrice,
-          coinsUsed,
-          discount,
-          finalPrice,
-          status: "confirmed",
-          qrCode,
+      // Generate QR Code Data URL
+      const qrPayload = JSON.stringify({
+        customer: user.name,
+        vehicle: `${vehicleType} (${vehicleNumber.toUpperCase()})`,
+        bookingId,
+        finalPrice,
+      });
+      const qrCode = await QRCode.toDataURL(qrPayload, {
+        margin: 2,
+        width: 256,
+        color: {
+          dark: "#0F0F12",
+          light: "#FFFFFF",
         },
       });
 
-      // Deduct Clean Coins if used
-      if (coinsUsed > 0) {
-        await tx.user.update({
-          where: { id: user.id },
-          data: { cleanCoins: { decrement: coinsUsed } },
+      try {
+        createdBooking = await prisma.$transaction(async (tx) => {
+          // Create Booking in MySQL
+          const newBooking = await tx.booking.create({
+            data: {
+              bookingId,
+              userId: user.id,
+              customerName: user.name,
+              customerPhone: user.phone,
+              customerEmail: user.email,
+              service,
+              plan,
+              vehicleType,
+              vehicleNumber: vehicleNumber.toUpperCase().trim(),
+              date,
+              timeSlot,
+              address: address?.trim() || null,
+              notes: notes?.trim() || null,
+              basePrice,
+              coinsUsed,
+              discount,
+              finalPrice,
+              status: "confirmed",
+              qrCode,
+            },
+          });
+
+          // Deduct Clean Coins if used
+          if (coinsUsed > 0) {
+            await tx.user.update({
+              where: { id: user.id },
+              data: { cleanCoins: { decrement: coinsUsed } },
+            });
+
+            await tx.coinTransaction.create({
+              data: {
+                userId: user.id,
+                type: "redeemed",
+                amount: coinsUsed,
+                reason: `Discount of ₹${calculateCoinsDiscount(coinsUsed)} on booking ${newBooking.bookingId}`,
+                bookingId: newBooking.id,
+              },
+            });
+          }
+
+          // Record promo code usage if applied
+          if (appliedPromo) {
+            await tx.promoCodeUsage.create({
+              data: {
+                promoCodeId: appliedPromo.id,
+                promoCode: appliedPromo.code,
+                userId: user.id,
+                userName: user.name,
+                bookingId: newBooking.id,
+                bookingRef: newBooking.bookingId,
+              },
+            });
+          }
+
+          return newBooking;
         });
 
-        await tx.coinTransaction.create({
-          data: {
-            userId: user.id,
-            type: "redeemed",
-            amount: coinsUsed,
-            reason: `Discount of ₹${calculateCoinsDiscount(coinsUsed)} on booking ${createdBooking.bookingId}`,
-            bookingId: createdBooking.id,
-          },
-        });
+        // If transaction completed successfully, break retry loop
+        break;
+      } catch (txError: any) {
+        // If unique constraint collision on bookingId (P2002) and retries remain, retry
+        if (
+          txError?.code === "P2002" &&
+          (txError?.meta?.target?.includes("bookingId") ||
+            txError?.message?.includes("bookingId")) &&
+          attempt < maxRetries
+        ) {
+          console.warn(
+            `[Booking] Collision detected on bookingId ${bookingId} (attempt ${attempt}/${maxRetries}). Retrying with next sequence...`
+          );
+          continue;
+        }
+        throw txError;
       }
+    }
 
-      // Record promo code usage if applied
-      if (appliedPromo) {
-        await tx.promoCodeUsage.create({
-          data: {
-            promoCodeId: appliedPromo.id,
-            promoCode: appliedPromo.code,
-            userId: user.id,
-            userName: user.name,
-            bookingId: createdBooking.id,
-            bookingRef: createdBooking.bookingId,
-          },
-        });
-      }
+    if (!createdBooking) {
+      throw new Error("Failed to allocate a unique booking identifier after maximum retries.");
+    }
 
-      return createdBooking;
-    });
+    const booking = createdBooking;
 
     // 7. Auto-Trigger WhatsApp Confirmation #1
     try {
