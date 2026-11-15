@@ -30,6 +30,10 @@ interface ReportStaffItem {
   status: string;
   joiningDate?: string | Date;
   baseSalary?: number;
+  presentDaysThisMonth?: number;
+  absentDaysThisMonth?: number;
+  totalPendingAdvance?: number;
+  thisMonthSalary?: number;
   attendanceStats?: {
     presentDays?: number;
     absentDays?: number;
@@ -140,10 +144,11 @@ export default function ReportsPage() {
       filename = `Patel_Car_Spa_Attendance_${MONTH_NAMES[selectedMonth - 1]}_${selectedYear}.csv`;
       csvContent += "Staff ID,Name,Role,Month,Year,Present Days,Absent Days,Monthly Attendance Rate\n";
       staffData.forEach((s) => {
-        const stats = s.attendanceStats || {};
-        csvContent += `"${s.staffId}","${s.name}","${s.role}","${MONTH_NAMES[selectedMonth - 1]}","${selectedYear}","${
-          stats.presentDays ?? 0
-        }","${stats.absentDays ?? 0}","${stats.attendanceRate ?? 0}%"\n`;
+        const present = s.presentDaysThisMonth ?? s.attendanceStats?.presentDays ?? 0;
+        const absent = s.absentDaysThisMonth ?? s.attendanceStats?.absentDays ?? 0;
+        const total = present + absent;
+        const rate = total > 0 ? Math.round((present / total) * 100) : (present > 0 ? 100 : 0);
+        csvContent += `"${s.staffId}","${s.name}","${s.role}","${MONTH_NAMES[selectedMonth - 1]}","${selectedYear}","${present}","${absent}","${rate}%"\n`;
       });
     } else if (reportType === "salary_payout") {
       filename = `Patel_Car_Spa_Salary_Payout_${MONTH_NAMES[selectedMonth - 1]}_${selectedYear}.csv`;
@@ -386,20 +391,23 @@ export default function ReportsPage() {
                 </thead>
                 <tbody className="divide-y divide-white/5 print:divide-gray-200">
                   {staffData.map((s) => {
-                    const stats = s.attendanceStats || {};
+                    const present = s.presentDaysThisMonth ?? s.attendanceStats?.presentDays ?? 0;
+                    const absent = s.absentDaysThisMonth ?? s.attendanceStats?.absentDays ?? 0;
+                    const total = present + absent;
+                    const rate = total > 0 ? Math.round((present / total) * 100) : (present > 0 ? 100 : 0);
                     return (
                       <tr key={s.id} className="hover:bg-white/[0.02]">
                         <td className="py-3.5 px-6 font-mono text-neon-blue font-bold print:text-black">{s.staffId}</td>
                         <td className="py-3.5 px-6 font-semibold text-white print:text-black">{s.name}</td>
                         <td className="py-3.5 px-4 text-gray-300 print:text-black">{s.role}</td>
                         <td className="py-3.5 px-4 text-right font-mono text-emerald-400 print:text-black">
-                          {stats.presentDays ?? 0}
+                          {present}
                         </td>
                         <td className="py-3.5 px-4 text-right font-mono text-red-400 print:text-black">
-                          {stats.absentDays ?? 0}
+                          {absent}
                         </td>
                         <td className="py-3.5 px-6 text-right font-mono font-bold text-neon-blue print:text-black">
-                          {stats.attendanceRate ?? 0}%
+                          {rate}%
                         </td>
                       </tr>
                     );
