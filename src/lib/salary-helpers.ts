@@ -197,6 +197,65 @@ export async function recoverAdvance(
 }
 
 /**
+ * 2b. Revert/restore recovered advance back to staff's advances (newest first / LIFO)
+ * Increases remainingBalance, decreases amountRecovered, and reopens CLOSED advances if balance > 0.
+ * Used when a salary record is deleted or when advanceCut is reduced on edit.
+ */
+export async function revertAdvance(
+  staffId: string,
+  amount: number,
+  tx?: PrismaExecutor
+): Promise<{ revertedTotal: number; reopenedCount: number }> {
+  if (amount <= 0) {
+    return { revertedTotal: 0, reopenedCount: 0 };
+  }
+
+  const client = tx || prisma;
+
+  // Find advances for this staff that have amountRecovered > 0, ordered descending (newest first)
+  const recoverableAdvances = await client.advance.findMany({
+    where: {
+      staffId,
+      amountRecovered: { gt: 0 },
+    },
+    orderBy: {
+      date: "desc",
+    },
+  });
+
+  let remainingToRevert = amount;
+  let revertedTotal = 0;
+  let reopenedCount = 0;
+
+  for (const adv of recoverableAdvances) {
+    if (remainingToRevert <= 0) break;
+
+    const refund = Math.min(adv.amountRecovered, remainingToRevert);
+    const newRecovered = Math.round((adv.amountRecovered - refund) * 100) / 100;
+    const newRemaining = Math.round((adv.remainingBalance + refund) * 100) / 100;
+    const wasClosed = adv.status === "CLOSED";
+
+    await client.advance.update({
+      where: { id: adv.id },
+      data: {
+        amountRecovered: Math.max(0, newRecovered),
+        remainingBalance: newRemaining,
+        status: newRemaining > 0 ? "OPEN" : adv.status,
+      },
+    });
+
+    remainingToRevert -= refund;
+    revertedTotal += refund;
+    if (wasClosed && newRemaining > 0) reopenedCount++;
+  }
+
+  return {
+    revertedTotal: Math.round(revertedTotal * 100) / 100,
+    reopenedCount,
+  };
+}
+
+/**
  * 3. Generate salary record in database with optional manual overrides.
  * Executes both advance recovery and salary creation inside an atomic prisma.$transaction
  * to ensure that any failure during salary creation automatically rolls back the advance deduction.

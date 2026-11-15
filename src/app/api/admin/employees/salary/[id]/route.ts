@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiSuccess, apiError, requireAdmin } from "@/lib/api-helpers";
+import { recoverAdvance, revertAdvance } from "@/lib/salary-helpers";
 import type { Prisma, PaymentMode } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -115,21 +116,34 @@ export async function PUT(
       updateData.remark = remark ? remark.trim() : null;
     }
 
-    const updated = await prisma.salary.update({
-      where: { id },
-      data: updateData,
-      include: {
-        staff: {
-          select: {
-            id: true,
-            staffId: true,
-            name: true,
-            role: true,
-            photo: true,
-            mobile: true,
+    const advanceDelta = Math.round((newAdvanceCut - salary.advanceCut) * 100) / 100;
+
+    const updated = await prisma.$transaction(async (tx) => {
+      // Reconcile employee Advance records if advanceCut was modified
+      if (advanceDelta > 0) {
+        // Cut was increased -> deduct additional amount from OPEN advances
+        await recoverAdvance(salary.staffId, advanceDelta, tx);
+      } else if (advanceDelta < 0) {
+        // Cut was decreased -> refund difference back to advances
+        await revertAdvance(salary.staffId, Math.abs(advanceDelta), tx);
+      }
+
+      return tx.salary.update({
+        where: { id },
+        data: updateData,
+        include: {
+          staff: {
+            select: {
+              id: true,
+              staffId: true,
+              name: true,
+              role: true,
+              photo: true,
+              mobile: true,
+            },
           },
         },
-      },
+      });
     });
 
     return apiSuccess(updated, "Salary record updated successfully");
@@ -174,8 +188,15 @@ export async function DELETE(
       );
     }
 
-    await prisma.salary.delete({
-      where: { id },
+    await prisma.$transaction(async (tx) => {
+      // Reconcile employee Advance records: Restore deducted advance back to employee's advances
+      if (salary.advanceCut > 0) {
+        await revertAdvance(salary.staffId, salary.advanceCut, tx);
+      }
+
+      await tx.salary.delete({
+        where: { id },
+      });
     });
 
     return apiSuccess({ deletedId: id }, "Salary record deleted successfully");
