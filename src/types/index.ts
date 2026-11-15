@@ -71,7 +71,8 @@ export interface IBooking {
 
 // Clean Coins Transaction Interface
 export interface ICoinTransaction {
-  _id: string;
+  id?: string;
+  _id?: string;
   userId: string;
   type: "earned" | "redeemed";
   amount: number;
